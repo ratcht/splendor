@@ -1,7 +1,8 @@
-from types import Card, Noble, Deck, Gem, empty_gem_stack, empty_deck, WinPoint
-from presets import CARDS, NOBLES, new_deck, new_nobles, new_starting_gems
+from models import Card, Noble, Deck, Gem, GemStack, WinPoint, CardLevel, empty_gem_stack, empty_deck, fmt_gems
+from presets import new_deck, new_nobles, new_starting_gems
+from dataclasses import dataclass, field
 
-@dataclass
+@dataclass(repr=False)
 class BoardState:
 	undealt_cards: Deck = field(default_factory=empty_deck)
 	dealt_cards: Deck = field(default_factory=empty_deck)
@@ -9,7 +10,19 @@ class BoardState:
 	nobles: list[Noble] = field(default_factory=list)
 	available_gems: GemStack = field(default_factory=empty_gem_stack)
 
-@dataclass
+	def __repr__(self) -> str:
+		nobles = '  '.join(repr(n) for n in self.nobles)
+		lines = [
+			f"  gems  : {fmt_gems(self.available_gems)}",
+			f"  nobles: {nobles}",
+		]
+		for level in CardLevel:
+			cards = self.dealt_cards[level]
+			row = '  '.join(repr(c) for c in cards) if cards else '(empty)'
+			lines.append(f"  L{level.value}    : {row}")
+		return "Board:\n" + '\n'.join(lines)
+
+@dataclass(repr=False)
 class PlayerState:
 	# cards
 	cards: list[Card] = field(default_factory=list)
@@ -18,22 +31,40 @@ class PlayerState:
 
 	# scores
 	gems: GemStack = field(default_factory=empty_gem_stack)
-	points: WinPoint = 0
 
 	@property
 	def total_gems(self) -> int:
-    return sum(self.gems.values())
+		return sum(self.gems.values())
 
 	@property
 	def discounts(self) -> GemStack:
 		counts = empty_gem_stack()
 		for card in self.cards:
 			counts[card.gem] += 1
-    return counts
+		return counts
+
+	@property
+	def points(self) -> WinPoint:
+		return sum(c.points for c in self.cards) + sum(n.points for n in self.nobles)
+
+	def __repr__(self) -> str:
+		return (
+			f"Player: {self.points}pt | "
+			f"gems:{fmt_gems(self.gems)} | "
+			f"cards:{len(self.cards)} (+{fmt_gems(self.discounts)}) | "
+			f"rsrv:{len(self.reserved_cards)} | "
+			f"nobles:{len(self.nobles)}"
+		)
+
+
+def _deal(deck: Deck, n: int = 4) -> Deck:
+	return {level: [deck[level].pop() for _ in range(n)] for level in CardLevel}
 
 def new_board_state(num_players: int) -> BoardState:
+	deck = new_deck()
 	return BoardState(
-		undealt_cards=new_deck(),
+		undealt_cards=deck,
+		dealt_cards=_deal(deck),
 		nobles=new_nobles(k=num_players+1),
 		available_gems=new_starting_gems(),
 	)
@@ -43,7 +74,7 @@ def new_player_state() -> PlayerState:
 
 
 class Table:
-	def __init__(self, num_players: int):
+	def __init__(self, num_players: int = 4):
 		assert 2 <= num_players <= 4
 
 		self.num_players = num_players
@@ -51,3 +82,12 @@ class Table:
 		self.players = [
 			new_player_state() for _ in range(self.num_players)
 		]
+
+	def __repr__(self) -> str:
+		lines = [f"=== Splendor ({self.num_players}p) ===", repr(self.board)]
+		for i, p in enumerate(self.players):
+			lines.append(f"P{i+1}: {repr(p)}")
+		return '\n'.join(lines)
+
+table = Table(4)
+print(table)

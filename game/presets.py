@@ -1,4 +1,4 @@
-from types import Card, Noble, CardLevel, Gem, GemStack, Deck
+from models import Card, Noble, CardLevel, Gem, GemStack, Deck
 import random
 
 
