@@ -39,6 +39,15 @@ def _payment(card: Card, player: PlayerState) -> GemStack:
   payment[Gem.Gold] = gold_needed
   return payment
 
+def check_nobles(board: BoardState, player: PlayerState) -> tuple[BoardState, PlayerState]:
+  # todo: if multiple qualify player should choose
+  earned = next((n for n in board.nobles if all(player.discounts[g] >= req for g, req in n.requirements.items())), None)
+  if earned is None:
+    return board, player
+  return (
+    replace(board, nobles=[n for n in board.nobles if n != earned]),
+    replace(player, nobles=[*player.nobles, earned])
+  )
 
 
 @dataclass
