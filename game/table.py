@@ -70,6 +70,13 @@ def new_player_state() -> PlayerState:
 	return PlayerState()
 
 
+@dataclass
+class TableState:
+	board: BoardState
+	players: list[PlayerState]
+	current: int
+
+
 class Table:
 	def __init__(self, num_players: int = 4):
 		assert 2 <= num_players <= 4
@@ -79,6 +86,9 @@ class Table:
 		self.players = [
 			new_player_state() for _ in range(self.num_players)
 		]
+
+	def state(self, current: int) -> TableState:
+		return TableState(self.board, self.players, current)
 
 	def __repr__(self) -> str:
 		lines = [f"=== Splendor ({self.num_players}p) ===", repr(self.board)]
