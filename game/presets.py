@@ -185,3 +185,8 @@ def new_starting_gems() -> GemStack:
     Gem.Ruby:     7,
     Gem.Gold:     5,
 	}
+
+def deal(deck: Deck, n: int = 4) -> tuple[Deck, Deck]:
+  dealt     = {level: cards[:n] for level, cards in deck.items()}
+  remaining = {level: cards[n:] for level, cards in deck.items()}
+  return dealt, remaining

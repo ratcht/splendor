@@ -1,5 +1,5 @@
 from models import Card, Noble, Deck, Gem, GemStack, WinPoint, CardLevel, empty_gem_stack, empty_deck, fmt_gems
-from presets import new_deck, new_nobles, new_starting_gems
+from presets import new_deck, new_nobles, new_starting_gems, deal
 from dataclasses import dataclass, field
 
 @dataclass(repr=False)
@@ -57,14 +57,11 @@ class PlayerState:
 		)
 
 
-def _deal(deck: Deck, n: int = 4) -> Deck:
-	return {level: [deck[level].pop() for _ in range(n)] for level in CardLevel}
-
 def new_board_state(num_players: int) -> BoardState:
-	deck = new_deck()
+	dealt, remaining = deal(new_deck())
 	return BoardState(
-		undealt_cards=deck,
-		dealt_cards=_deal(deck),
+		undealt_cards=remaining,
+		dealt_cards=dealt,
 		nobles=new_nobles(k=num_players+1),
 		available_gems=new_starting_gems(),
 	)
