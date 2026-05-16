@@ -82,19 +82,18 @@ class Table:
 		assert 2 <= num_players <= 4
 
 		self.num_players = num_players
-		self.board = new_board_state(self.num_players)
-		self.players = [
-			new_player_state() for _ in range(self.num_players)
-		]
+		self.board       = new_board_state(num_players)
+		self.players     = [new_player_state() for _ in range(num_players)]
+		self.current     = 0
 
-	def state(self, current: int) -> TableState:
-		return TableState(self.board, self.players, current)
+	def state(self) -> TableState:
+		return TableState(self.board, self.players, self.current)
+
+	def advance(self) -> None:
+		self.current = (self.current + 1) % self.num_players
 
 	def __repr__(self) -> str:
 		lines = [f"=== Splendor ({self.num_players}p) ===", repr(self.board)]
 		for i, p in enumerate(self.players):
 			lines.append(f"P{i+1}: {repr(p)}")
 		return '\n'.join(lines)
-
-table = Table(4)
-print(table)

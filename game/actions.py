@@ -1,7 +1,17 @@
 from abc import ABC, abstractmethod
+from enum import Enum
 from dataclasses import dataclass, field, replace
 from models import Card, Deck, Gem, GemStack, empty_gem_stack
 from table import BoardState, PlayerState
+
+
+class ActionType(Enum):
+  TakeTwo   = "Take 2 gems"
+  TakeThree = "Take 3 gems"
+  Buy       = "Buy card"
+  Reserve   = "Reserve card"
+
+  def __str__(self): return self.value
 
 
 class Action(ABC):
@@ -20,13 +30,6 @@ def _transfer(src: GemStack, dst: GemStack, amount: GemStack) -> tuple[GemStack,
 def _remove_card(dealt: Deck, card: Card) -> Deck:
   return {lvl: [c for c in cards if c != card] for lvl, cards in dealt.items()}
 
-def _can_afford(card: Card, player: PlayerState) -> bool:
-  discounts = player.discounts
-  gold_needed = 0
-  for gem, cost in card.cost.items():
-    gold_needed += max(0, cost - discounts[gem] - player.gems[gem])
-  return gold_needed <= player.gems[Gem.Gold]
-
 def _payment(card: Card, player: PlayerState) -> GemStack:
   discounts = player.discounts
   payment = empty_gem_stack()
@@ -38,6 +41,9 @@ def _payment(card: Card, player: PlayerState) -> GemStack:
     gold_needed += effective - spent
   payment[Gem.Gold] = gold_needed
   return payment
+
+def _can_afford(card: Card, player: PlayerState) -> bool:
+  return _payment(card, player)[Gem.Gold] <= player.gems[Gem.Gold]
 
 def check_nobles(board: BoardState, player: PlayerState) -> tuple[BoardState, PlayerState]:
   # todo: if multiple qualify player should choose
