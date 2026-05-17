@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from dataclasses import dataclass, field, replace
+from itertools import combinations, combinations_with_replacement, chain
+from collections import Counter
 from models import Card, Deck, Gem, GemStack, empty_gem_stack
 from state import BoardState, PlayerState
 
-from itertools import combinations_with_replacement
-from collections import Counter
+
+NON_GOLD_GEMS = [g for g in Gem if g != Gem.Gold]
 
 
 class ActionType(Enum):
@@ -18,11 +20,10 @@ class ActionType(Enum):
 
 
 class Action(ABC):
-	@classmethod
-	@abstractmethod
-	def legal_actions(cls, board: BoardState, player: PlayerState) -> list[Actions]: ...
+  @classmethod
+  @abstractmethod
+  def legal_actions(cls, board: BoardState, player: PlayerState) -> list["Action"]: ...
 
-	@staticmethod
   @abstractmethod
   def is_valid(self, board: BoardState, player: PlayerState) -> bool: ...
 
@@ -78,9 +79,8 @@ class TakeTwoGems(Action):
   gem: Gem
   returns: GemStack = field(default_factory=empty_gem_stack)
 
-	@staticmethod
-  def is_valid(gem: Gem, board: BoardState, player: PlayerState) -> bool:
-    return board.available_gems[gem] >= 4
+  def is_valid(self, board: BoardState, player: PlayerState) -> bool:
+    return board.available_gems[self.gem] >= 4
 
   def apply(self, board: BoardState, player: PlayerState) -> tuple[BoardState, PlayerState]:
     take = {**empty_gem_stack(), self.gem: 2}
@@ -88,18 +88,16 @@ class TakeTwoGems(Action):
     gems, board_gems = _transfer(gems, board_gems, self.returns)
     return replace(board, available_gems=board_gems), replace(player, gems=gems)
 
-	def legal_actions(cls, board: BoardState, player: PlayerState) -> list[TakeTwoGems]:
-		eligible = [g for g in NON_GOLD_GEMS if board.available_gems[g] >= 4]
-		if not eligible: return []
-
-		excess = max(0, player.total_gems + 2 - 10)
-
-		return [
-			cls(gem=gem, returns=returns)
-			for gem in eligible
-			for returns in _enumerate_returns({g: player.gems[g] + (2 if g == gem else 0) for g in Gem}, excess)
-		]
-
+  @classmethod
+  def legal_actions(cls, board: BoardState, player: PlayerState) -> list["TakeTwoGems"]:
+    eligible = [g for g in NON_GOLD_GEMS if board.available_gems[g] >= 4]
+    if not eligible: return []
+    excess = max(0, player.total_gems + 2 - 10)
+    return [
+      cls(gem=gem, returns=returns)
+      for gem in eligible
+      for returns in _enumerate_returns({g: player.gems[g] + (2 if g == gem else 0) for g in Gem}, excess)
+    ]
 
 
 @dataclass
@@ -107,11 +105,10 @@ class TakeThreeGems(Action):
   gems: tuple[Gem, Gem, Gem]
   returns: GemStack = field(default_factory=empty_gem_stack)
 
-	@staticmethod
-  def is_valid(gems: tuple[Gem, Gem, Gem], board: BoardState, player: PlayerState) -> bool:
+  def is_valid(self, board: BoardState, player: PlayerState) -> bool:
     return (
-      len(set(gems)) == 3
-      and all(board.available_gems[g] >= 1 for g in gems)
+      len(set(self.gems)) == 3
+      and all(board.available_gems[g] >= 1 for g in self.gems)
     )
 
   def apply(self, board: BoardState, player: PlayerState) -> tuple[BoardState, PlayerState]:
@@ -120,28 +117,26 @@ class TakeThreeGems(Action):
     gems, board_gems = _transfer(gems, board_gems, self.returns)
     return replace(board, available_gems=board_gems), replace(player, gems=gems)
 
-	def legal_actions(cls, board: BoardState, player: PlayerState) -> list[TakeThreeGems]:
-		eligible = [g for g in NON_GOLD_GEMS if board.available_gems[g] >= 1]
-		if not eligible: return []
-		eligible_sets = combinations(eligible, 3)
+  @classmethod
+  def legal_actions(cls, board: BoardState, player: PlayerState) -> list["TakeThreeGems"]:
+    eligible = [g for g in NON_GOLD_GEMS if board.available_gems[g] >= 1]
+    if len(eligible) < 3: return []
+    excess = max(0, player.total_gems + 3 - 10)
+    return [
+      cls(gems=gems, returns=returns)
+      for gems in combinations(eligible, 3)
+      for returns in _enumerate_returns({g: player.gems[g] + (1 if g in gems else 0) for g in Gem}, excess)
+    ]
 
-		excess = max(0, player.total_gems + 3 - 10)
-
-		return [
-			cls(gems=gems, returns=returns)
-			for gems in eligible_sets
-			for returns in _enumerate_returns({g: player.gems[g] + (1 if g in gems else 0) for g in Gem}, excess)
-		]
 
 @dataclass
 class BuyCard(Action):
   card: Card
 
-	@staticmethod
-  def is_valid(card: Card, board: BoardState, player: PlayerState) -> bool:
-    on_board   = any(card in cards for cards in board.dealt_cards.values())
-    in_reserve = card in player.reserved_cards
-    return (on_board or in_reserve) and _can_afford(card, player)
+  def is_valid(self, board: BoardState, player: PlayerState) -> bool:
+    on_board   = any(self.card in cards for cards in board.dealt_cards.values())
+    in_reserve = self.card in player.reserved_cards
+    return (on_board or in_reserve) and _can_afford(self.card, player)
 
   def apply(self, board: BoardState, player: PlayerState) -> tuple[BoardState, PlayerState]:
     pay = _payment(self.card, player)
@@ -152,14 +147,13 @@ class BuyCard(Action):
       replace(player, cards=[*player.cards, self.card], reserved_cards=reserved, gems=gems)
     )
 
-	def legal_actions(cls, board: BoardState, player: PlayerState) -> list[BuyCard]:
-	  affordable  = [
-			cls(c) for cards in chain(board.dealt_cards.values(), player.reserved_cards)
-			for c in cards
-			if cls.is_valid(c, board, player)
-		]
-	  if not affordable: return []
-
+  @classmethod
+  def legal_actions(cls, board: BoardState, player: PlayerState) -> list["BuyCard"]:
+    candidates = chain(
+      (c for cards in board.dealt_cards.values() for c in cards),
+      player.reserved_cards,
+    )
+    return [cls(card=c) for c in candidates if _can_afford(c, player)]
 
 
 @dataclass
@@ -167,9 +161,8 @@ class ReserveCard(Action):
   card: Card
   returns: GemStack = field(default_factory=empty_gem_stack)
 
-	@staticmethod
-  def is_valid(card: Card, board: BoardState, player: PlayerState) -> bool:
-    on_board = any(card in cards for cards in board.dealt_cards.values())
+  def is_valid(self, board: BoardState, player: PlayerState) -> bool:
+    on_board = any(self.card in cards for cards in board.dealt_cards.values())
     return on_board and len(player.reserved_cards) < 3
 
   def apply(self, board: BoardState, player: PlayerState) -> tuple[BoardState, PlayerState]:
@@ -181,16 +174,25 @@ class ReserveCard(Action):
       replace(player, reserved_cards=[*player.reserved_cards, self.card], gems=gems)
     )
 
-	def legal_actions(cls, board: BoardState, player: PlayerState) -> list[ReserveCard]:
-		all_cards = [c for cards in board.dealt_cards.values() for c in cards]
+  @classmethod
+  def legal_actions(cls, board: BoardState, player: PlayerState) -> list["ReserveCard"]:
+    if len(player.reserved_cards) >= 3: return []
+    all_cards = [c for cards in board.dealt_cards.values() for c in cards]
+    if not all_cards: return []
+    gold_gained = 1 if board.available_gems[Gem.Gold] > 0 else 0
+    excess = max(0, player.total_gems + gold_gained - 10)
+    pool = {g: player.gems[g] + (gold_gained if g == Gem.Gold else 0) for g in Gem}
+    return [
+      cls(card=card, returns=returns)
+      for card in all_cards
+      for returns in _enumerate_returns(pool, excess)
+    ]
 
-		if len(player.reserved_cards) >= 3: return []
-		if not all_cards: return []
 
-		excess = max(0, player.total_gems + 3 - 10)
-
-		return [
-			cls(card=card, returns=returns)
-			for card in all_cards
-			for returns in _enumerate_returns({g: player.gems[g] + (1 if g == Gems.Gold else 0) for g in Gem}, excess)
-		]
+ACTION_TYPE_TO_CLASS: dict[ActionType, type[Action]] = {
+  ActionType.TakeTwo:   TakeTwoGems,
+  ActionType.TakeThree: TakeThreeGems,
+  ActionType.Buy:       BuyCard,
+  ActionType.Reserve:   ReserveCard,
+}
+ACTION_CLASSES: list[type[Action]] = list(ACTION_TYPE_TO_CLASS.values())

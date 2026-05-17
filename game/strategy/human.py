@@ -1,11 +1,12 @@
 from typing import TypeVar
-from models import Gem, GemStack, empty_gem_stack
-from state import TableState, PlayerState
-from actions import Action, ActionType, TakeTwoGems, TakeThreeGems, BuyCard, ReserveCard
+from models import fmt_gems
+from state import TableState, BoardState, PlayerState
+from actions import (
+  Action, ActionType, ACTION_TYPE_TO_CLASS,
+  TakeTwoGems, TakeThreeGems, BuyCard, ReserveCard,
+)
 
 T = TypeVar('T')
-
-NON_GOLD_GEMS = [g for g in Gem if g != Gem.Gold]
 BACK_KEY = 'b'
 
 
@@ -30,94 +31,37 @@ def pick(prompt: str, options: list[T], display=str, allow_back: bool = True) ->
     except ValueError:
       print("  Enter a number.")
 
-def parse_gem(raw: str, available: list[Gem]) -> Gem | None:
-  raw = raw.lower()
-  for g in available:
-    if raw == g.name[0].lower() or raw == g.name.lower():
-      return g
-  return None
 
-def fmt_gem_options(available: list[Gem]) -> str:
-  return ', '.join(f"({g.name[0]}){g.name[1:]}" for g in available)
+# ── action display ────────────────────────────────────────────────────────────
 
-def pick_gem(prompt: str, available: list[Gem]) -> Gem:
-  print(f"  Options: {fmt_gem_options(available)}")
-  while True:
-    raw = input(f"{prompt} ({BACK_KEY} to go back): ").strip()
-    if raw.lower() == BACK_KEY:
-      raise Back
-    gem = parse_gem(raw, available)
-    if gem is not None:
-      return gem
-    print("  Unknown gem.")
-
-def prompt_returns(player: PlayerState, taking: int) -> GemStack:
-  excess = player.total_gems + taking - 10
-  if excess <= 0:
-    return empty_gem_stack()
-  returns   = empty_gem_stack()
-  remaining = excess
-  available = [g for g in Gem if player.gems[g] > 0]
-  print(f"  You must return {excess} gem(s). Options: {fmt_gem_options(available)}")
-  while remaining > 0:
-    raw = input(f"  Return which gem? ({remaining} left, {BACK_KEY} to go back): ").strip()
-    if raw.lower() == BACK_KEY:
-      raise Back
-    gem = parse_gem(raw, available)
-    if gem is None:
-      print("  Unknown gem.")
-    elif player.gems[gem] - returns[gem] <= 0:
-      print("  You dont have any more of that gem.")
-    else:
-      returns[gem] += 1
-      remaining -= 1
-  return returns
+def fmt_action_primary(action: Action) -> str:
+  """Display an action ignoring its `returns` field."""
+  match action:
+    case TakeTwoGems(gem=gem):     return f"Take 2 {gem.name[0]}"
+    case TakeThreeGems(gems=gems): return f"Take {', '.join(g.name[0] for g in gems)}"
+    case BuyCard(card=card):       return f"Buy {card!r}"
+    case ReserveCard(card=card):   return f"Reserve {card!r}"
+    case _:                        return repr(action)
 
 
-# ── action builders ───────────────────────────────────────────────────────────
+# ── action builder ────────────────────────────────────────────────────────────
 
-def take_two(board, player) -> TakeTwoGems | None:
-  eligible = [g for g in NON_GOLD_GEMS if board.available_gems[g] >= 4]
-  if not eligible:
-    print("  No gem has 4+ available."); return None
+def build_action(action_type: ActionType, board: BoardState, player: PlayerState) -> Action | None:
+  cls = ACTION_TYPE_TO_CLASS[action_type]
+  actions = cls.legal_actions(board, player)
+  if not actions:
+    print(f"  No legal {action_type} actions."); return None
+
+  groups: dict[str, list[Action]] = {}
+  for a in actions:
+    groups.setdefault(fmt_action_primary(a), []).append(a)
+
   try:
-    gem = pick_gem("Which gem", eligible)
-    return TakeTwoGems(gem=gem, returns=prompt_returns(player, 2))
-  except Back:
-    return None
-
-def take_three(board, player) -> TakeThreeGems | None:
-  eligible = [g for g in NON_GOLD_GEMS if board.available_gems[g] >= 1]
-  if len(eligible) < 3:
-    print("  Not enough gem colors available."); return None
-  print("  Pick 3 different gems:")
-  try:
-    g1 = pick_gem("First gem",  eligible)
-    g2 = pick_gem("Second gem", [g for g in eligible if g != g1])
-    g3 = pick_gem("Third gem",  [g for g in eligible if g not in (g1, g2)])
-    return TakeThreeGems(gems=(g1, g2, g3), returns=prompt_returns(player, 3))
-  except Back:
-    return None
-
-def buy_card(board, player) -> BuyCard | None:
-  affordable  = [c for cards in board.dealt_cards.values() for c in cards if BuyCard(c).is_valid(board, player)]
-  affordable += [c for c in player.reserved_cards if BuyCard(c).is_valid(board, player)]
-  if not affordable:
-    print("  You cant afford any cards."); return None
-  try:
-    return BuyCard(card=pick("Which card", affordable, display=repr))
-  except Back:
-    return None
-
-def reserve_card(board, player) -> ReserveCard | None:
-  all_cards = [c for cards in board.dealt_cards.values() for c in cards]
-  if len(player.reserved_cards) >= 3:
-    print("  Reserve limit reached (3)."); return None
-  if not all_cards:
-    print("  No cards on board."); return None
-  gold = 1 if board.available_gems[Gem.Gold] > 0 else 0
-  try:
-    return ReserveCard(card=pick("Which card", all_cards, display=repr), returns=prompt_returns(player, gold))
+    chosen = pick("Which", list(groups.keys()), display=str)
+    options = groups[chosen]
+    if len(options) == 1:
+      return options[0]
+    return pick("Return", options, display=lambda a: fmt_gems(a.returns))
   except Back:
     return None
 
@@ -132,10 +76,7 @@ class HumanStrategy:
     print(f"\n{state!r}\n")
 
     while True:
-      match pick(f"P{state.current + 1} action", list(ActionType), allow_back=False):
-        case ActionType.TakeTwo:   result = take_two(board, player)
-        case ActionType.TakeThree: result = take_three(board, player)
-        case ActionType.Buy:       result = buy_card(board, player)
-        case ActionType.Reserve:   result = reserve_card(board, player)
+      action_type = pick(f"P{state.current + 1} action", list(ActionType), allow_back=False)
+      result = build_action(action_type, board, player)
       if result is not None:
         return result
