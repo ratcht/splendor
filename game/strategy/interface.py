@@ -1,5 +1,5 @@
 from typing import Protocol
-from table import TableState
+from state import TableState
 from actions import Action
 
 

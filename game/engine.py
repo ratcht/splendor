@@ -1,20 +1,8 @@
-from dataclasses import replace
-from models import CardLevel
-from table import BoardState, PlayerState, Table
+from state import PlayerState
+from table import Table
 from actions import Action, check_nobles
 from strategy.interface import Strategy
-
-
-def refill(board: BoardState) -> BoardState:
-  dealt, undealt = {}, {}
-  for lvl in CardLevel:
-    d, u = board.dealt_cards[lvl], board.undealt_cards[lvl]
-    take = min(4 - len(d), len(u))
-    if take <= 0:
-      dealt[lvl], undealt[lvl] = d, u
-    else:
-      dealt[lvl], undealt[lvl] = [*d, *u[-take:]], u[:-take]
-  return replace(board, dealt_cards=dealt, undealt_cards=undealt)
+from dealer import Dealer
 
 
 def take_turn(table: Table, action: Action) -> None:
@@ -23,12 +11,12 @@ def take_turn(table: Table, action: Action) -> None:
     raise ValueError(f"invalid action: {action}")
   board, player = action.apply(table.board, player)
   board, player = check_nobles(board, player)
-  table.board = refill(board)
+  table.board = table.dealer.refill(board)
   table.players[table.current] = player
 
 
-def run_game(agents: list[Strategy]) -> tuple[int, PlayerState]:
-  table     = Table(len(agents))
+def run_game(agents: list[Strategy], dealer: Dealer = None) -> tuple[int, PlayerState]:
+  table     = Table(len(agents), dealer=dealer)
   game_over = False
 
   while True:

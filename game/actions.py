@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from dataclasses import dataclass, field, replace
 from models import Card, Deck, Gem, GemStack, empty_gem_stack
-from table import BoardState, PlayerState
+from state import BoardState, PlayerState
 
 
 class ActionType(Enum):

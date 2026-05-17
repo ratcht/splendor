@@ -1,6 +1,6 @@
 from typing import TypeVar
 from models import Gem, GemStack, empty_gem_stack
-from table import TableState, PlayerState
+from state import TableState, PlayerState
 from actions import Action, ActionType, TakeTwoGems, TakeThreeGems, BuyCard, ReserveCard
 
 T = TypeVar('T')
