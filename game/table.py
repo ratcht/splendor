@@ -1,6 +1,7 @@
 from models import Card, Noble, Deck, Gem, GemStack, WinPoint, CardLevel, empty_gem_stack, empty_deck, fmt_gems
 from presets import new_deck, new_nobles, new_starting_gems, deal
 from dataclasses import dataclass, field
+from tabulate import tabulate
 
 @dataclass(repr=False)
 class BoardState:
@@ -11,16 +12,17 @@ class BoardState:
 	available_gems: GemStack = field(default_factory=empty_gem_stack)
 
 	def __repr__(self) -> str:
+		def fmt_card(c: Card) -> str:
+			return f"[+{c.gem.name[0]} {c.points}pt | {fmt_gems(c.cost)}]"
+
+		rows = [[f"L{lvl.value}", *(fmt_card(c) for c in self.dealt_cards[lvl])] for lvl in reversed(CardLevel)]
 		nobles = '  '.join(repr(n) for n in self.nobles)
-		lines = [
-			f"  gems  : {fmt_gems(self.available_gems)}",
-			f"  nobles: {nobles}",
-		]
-		for level in CardLevel:
-			cards = self.dealt_cards[level]
-			row = '  '.join(repr(c) for c in cards) if cards else '(empty)'
-			lines.append(f"  L{level.value}    : {row}")
-		return "Board:\n" + '\n'.join(lines)
+		return (
+			f"Board:\n"
+			f"  gems  : {fmt_gems(self.available_gems)}\n"
+			f"  nobles: {nobles}\n"
+			f"{tabulate(rows, tablefmt='plain')}"
+		)
 
 @dataclass(repr=False)
 class PlayerState:
@@ -75,6 +77,13 @@ class TableState:
 	board: BoardState
 	players: list[PlayerState]
 	current: int
+
+	def __repr__(self) -> str:
+		lines = [repr(self.board)]
+		for i, p in enumerate(self.players):
+			marker = '>' if i == self.current else ' '
+			lines.append(f"{marker} P{i+1}: {repr(p)}")
+		return '\n'.join(lines)
 
 
 class Table:

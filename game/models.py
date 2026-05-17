@@ -2,12 +2,12 @@ from enum import Enum, auto
 from dataclasses import dataclass, field
 
 class Gem(Enum):
-	Emerald=auto()
-	Sapphire=auto()
-	Onyx=auto()
-	Diamond=auto()
-	Ruby=auto()
-	Gold=auto()
+	Emerald=auto() # Green
+	Sapphire=auto() # Blue
+	Onyx=auto() # Black
+	Diamond=auto() # White
+	Ruby=auto() # Red
+	Gold=auto() # Gold
 
 class CardLevel(Enum):
 	Level1=1
