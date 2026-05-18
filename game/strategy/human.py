@@ -1,5 +1,4 @@
 from typing import TypeVar
-from models import fmt_gems
 from state import TableState, BoardState, PlayerState
 from actions import (
   Action, ActionType, ACTION_TYPE_TO_CLASS,
@@ -61,7 +60,7 @@ def build_action(action_type: ActionType, board: BoardState, player: PlayerState
     options = groups[chosen]
     if len(options) == 1:
       return options[0]
-    return pick("Return", options, display=lambda a: fmt_gems(a.returns))
+    return pick("Return", options, display=lambda a: repr(a.returns))
   except Back:
     return None
 

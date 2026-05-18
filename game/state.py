@@ -1,24 +1,25 @@
 from dataclasses import dataclass, field
+from collections import Counter
 from tabulate import tabulate
-from models import Card, Noble, Deck, GemStack, WinPoint, CardLevel, empty_gem_stack, empty_deck, fmt_gems
+from models import Card, Noble, Deck, GemStack, WinPoint, CardLevel, empty_deck
 
 
 @dataclass(repr=False)
 class BoardState:
-  undealt_cards:  Deck     = field(default_factory=empty_deck)
-  dealt_cards:    Deck     = field(default_factory=empty_deck)
+  undealt_cards:  Deck        = field(default_factory=empty_deck)
+  dealt_cards:    Deck        = field(default_factory=empty_deck)
   nobles:         list[Noble] = field(default_factory=list)
-  available_gems: GemStack = field(default_factory=empty_gem_stack)
+  available_gems: GemStack    = field(default_factory=GemStack)
 
   def __repr__(self) -> str:
     def fmt_card(c: Card) -> str:
-      return f"[+{c.gem.name[0]} {c.points}pt | {fmt_gems(c.cost)}]"
+      return f"[+{c.gem.name[0]} {c.points}pt | {c.cost!r}]"
 
     rows = [[f"L{lvl.value}", *(fmt_card(c) for c in self.dealt_cards[lvl])] for lvl in reversed(CardLevel)]
     nobles = '  '.join(repr(n) for n in self.nobles)
     return (
       f"Board:\n"
-      f"  gems  : {fmt_gems(self.available_gems)}\n"
+      f"  gems  : {self.available_gems!r}\n"
       f"  nobles: {nobles}\n"
       f"{tabulate(rows, tablefmt='plain')}"
     )
@@ -29,18 +30,11 @@ class PlayerState:
   cards:          list[Card]  = field(default_factory=list)
   reserved_cards: list[Card]  = field(default_factory=list)
   nobles:         list[Noble] = field(default_factory=list)
-  gems:           GemStack    = field(default_factory=empty_gem_stack)
-
-  @property
-  def total_gems(self) -> int:
-    return sum(self.gems.values())
+  gems:           GemStack    = field(default_factory=GemStack)
 
   @property
   def discounts(self) -> GemStack:
-    counts = empty_gem_stack()
-    for card in self.cards:
-      counts[card.gem] += 1
-    return counts
+    return GemStack.from_counts(Counter(card.gem for card in self.cards))
 
   @property
   def points(self) -> WinPoint:
@@ -49,8 +43,8 @@ class PlayerState:
   def __repr__(self) -> str:
     return (
       f"Player: {self.points}pt | "
-      f"gems:{fmt_gems(self.gems)} | "
-      f"cards:{len(self.cards)} (+{fmt_gems(self.discounts)}) | "
+      f"gems:{self.gems!r} | "
+      f"cards:{len(self.cards)} (+{self.discounts!r}) | "
       f"rsrv:{len(self.reserved_cards)} | "
       f"nobles:{len(self.nobles)}"
     )

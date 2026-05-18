@@ -1,6 +1,6 @@
 from typing import Protocol
 from dataclasses import replace
-from models import Card, Noble, Gem, CardLevel, Deck, empty_deck, empty_gem_stack, fmt_gems
+from models import Card, Noble, Gem, CardLevel, Deck, empty_deck, GemStack
 from state import BoardState
 from presets import ALL_CARDS, ALL_NOBLES, new_deck, new_nobles, new_starting_gems, deal
 
@@ -71,9 +71,9 @@ class InteractiveDealer:
     return replace(board, dealt_cards=dealt, undealt_cards=undealt)
 
 
-def _parse_card(raw: str) -> tuple[Gem, int, dict] | None:
+def _parse_card(raw: str) -> tuple[Gem, int, GemStack] | None:
   bonus, points = None, None
-  cost = empty_gem_stack()
+  cost: dict[Gem, int] = {}
   for tok in raw.lower().replace('|', ' ').split():
     if tok.startswith('+') and len(tok) == 2:
       bonus = next((g for g in Gem if g.name[0].lower() == tok[1]), None)
@@ -89,7 +89,7 @@ def _parse_card(raw: str) -> tuple[Gem, int, dict] | None:
       if gem is None: return None
       cost[gem] = int(tok[:i])
   if bonus is None or points is None: return None
-  return bonus, points, cost
+  return bonus, points, GemStack.from_counts(cost)
 
 def _find_card(raw: str, available: list[Card]) -> Card | None:
   parsed = _parse_card(raw)

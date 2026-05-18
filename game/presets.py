@@ -2,23 +2,6 @@ from models import Card, Noble, CardLevel, Gem, GemStack, Deck
 import random
 
 
-# ── helpers ───────────────────────────────────────────────────────
-
-def _build_gem_stack(e=0, d=0, s=0, o=0, r=0) -> GemStack:
-  """Build a cost/requirement GemStack.
-  e=Emerald, d=Diamond, s=Sapphire, o=Onyx, r=Ruby.
-  Gold is always 0 for card costs and noble requirements.
-  """
-  return {
-    Gem.Emerald:  e,
-    Gem.Diamond:  d,
-    Gem.Sapphire: s,
-    Gem.Onyx:     o,
-    Gem.Ruby:     r,
-    Gem.Gold:     0,
-  }
-
-
 E = Gem.Emerald
 D = Gem.Diamond
 S = Gem.Sapphire
@@ -133,7 +116,7 @@ _RAW_L3 = [
 
 
 def _build_cards(raw: list, level: CardLevel) -> list[Card]:
-  return [Card(level, gem, pts, _build_gem_stack(*cost)) for gem, pts, cost in raw]
+  return [Card(level, gem, pts, GemStack(e=e, d=d, s=s, o=o, r=r)) for gem, pts, (e, d, s, o, r) in raw]
 
 
 # ── noble raw data ───────────────────────────────────────────────────────────
@@ -163,8 +146,8 @@ ALL_CARDS: Deck = {
 }
 
 ALL_NOBLES: list[Noble] = [
-  Noble(requirements=_build_gem_stack(*req), points=3)
-  for req in _RAW_NOBLES
+  Noble(requirements=GemStack(e=e, d=d, s=s, o=o, r=r), points=3)
+  for e, d, s, o, r in _RAW_NOBLES
 ]
 
 def new_deck() -> Deck:
@@ -177,14 +160,7 @@ def new_nobles(k: int = 5) -> list[Noble]:
 	return random.sample(ALL_NOBLES, k=k)
 
 def new_starting_gems() -> GemStack:
-	return {
-    Gem.Emerald:  7,
-    Gem.Diamond:  7,
-    Gem.Sapphire: 7,
-    Gem.Onyx:     7,
-    Gem.Ruby:     7,
-    Gem.Gold:     5,
-	}
+  return GemStack(e=7, d=7, s=7, o=7, r=7, g=5)
 
 def deal(deck: Deck, n: int = 4) -> tuple[Deck, Deck]:
   dealt     = {level: cards[:n] for level, cards in deck.items()}
