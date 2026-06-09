@@ -1,0 +1,17 @@
+{
+	"languages": {
+		"Python": {
+			"format_on_save": "off",
+			"auto_indent_on_paste": false,
+			"auto_indent": false,
+		},
+		"Rust": {
+			"format_on_save": "off",
+			"auto_indent_on_paste": false,
+			"auto_indent": false,
+		},
+	},
+	"auto_indent": true,
+	"auto_indent_on_paste": true,
+	"tab_size": 2,
+}

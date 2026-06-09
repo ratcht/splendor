@@ -91,7 +91,7 @@ class TakeTwoGems(Action):
     )
 
   @classmethod
-  def legal_actions(cls, board: BoardState, player: PlayerState) -> list["TakeTwoGems"]:
+  def legal_actions(cls, board: BoardState, player: PlayerState) -> list[Action]:
     eligible = [g for g in NON_GOLD_GEMS if board.available_gems[g] >= 4]
     if not eligible: return []
     excess = max(0, player.gems.total + 2 - 10)
@@ -121,7 +121,7 @@ class TakeThreeGems(Action):
     )
 
   @classmethod
-  def legal_actions(cls, board: BoardState, player: PlayerState) -> list["TakeThreeGems"]:
+  def legal_actions(cls, board: BoardState, player: PlayerState) -> list[Action]:
     eligible = [g for g in NON_GOLD_GEMS if board.available_gems[g] >= 1]
     if len(eligible) < 3: return []
     excess = max(0, player.gems.total + 3 - 10)
@@ -152,7 +152,7 @@ class BuyCard(Action):
     )
 
   @classmethod
-  def legal_actions(cls, board: BoardState, player: PlayerState) -> list["BuyCard"]:
+  def legal_actions(cls, board: BoardState, player: PlayerState) -> list[Action]:
     candidates = chain(
       (c for cards in board.dealt_cards.values() for c in cards),
       player.reserved_cards,
