@@ -1,13 +1,14 @@
 import random
-from state import TableState
-from actions import Action, ACTION_CLASSES
 
+from actions import ACTION_CLASSES, Action
+from state import TableState
 
 # ── strategy ──────────────────────────────────────────────────────────────────
 
+
 class RandomStrategy:
   def choose_action(self, state: TableState) -> Action:
-    board  = state.board
+    board = state.board
     player = state.players[state.current]
 
     # pick action class

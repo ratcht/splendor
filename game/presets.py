@@ -1,6 +1,6 @@
-from models import Card, Noble, CardLevel, Gem, GemStack, Deck, OptionalDeck
 import random
 
+from models import Card, CardLevel, Deck, Gem, GemStack, Noble, OptionalDeck
 
 E = Gem.Emerald
 D = Gem.Diamond
@@ -116,7 +116,10 @@ _RAW_L3 = [
 
 
 def _build_cards(raw: list, level: CardLevel) -> list[Card]:
-  return [Card(level, gem, pts, GemStack(e=e, d=d, s=s, o=o, r=r)) for gem, pts, (e, d, s, o, r) in raw]
+  return [
+    Card(level, gem, pts, GemStack(e=e, d=d, s=s, o=o, r=r))
+    for gem, pts, (e, d, s, o, r) in raw
+  ]
 
 
 # ── noble raw data ───────────────────────────────────────────────────────────
@@ -150,17 +153,21 @@ ALL_NOBLES: list[Noble] = [
   for e, d, s, o, r in _RAW_NOBLES
 ]
 
+
 def new_deck() -> Deck:
   deck = {level: cards.copy() for level, cards in ALL_CARDS.items()}
   for cards in deck.values():
     random.shuffle(cards)
   return deck
 
+
 def new_nobles(k: int = 5) -> list[Noble]:
-	return random.sample(ALL_NOBLES, k=k)
+  return random.sample(ALL_NOBLES, k=k)
+
 
 def new_starting_gems() -> GemStack:
   return GemStack(e=7, d=7, s=7, o=7, r=7, g=5)
+
 
 def deal(deck: Deck, n: int = 4) -> tuple[OptionalDeck, Deck]:
   dealt: OptionalDeck = {level: [] for level in CardLevel}

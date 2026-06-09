@@ -1,18 +1,21 @@
+from dataclasses import dataclass
 from enum import Enum, auto
-from dataclasses import dataclass, field
+
 
 class Gem(Enum):
-  Emerald  = auto()  # Green
+  Emerald = auto()  # Green
   Sapphire = auto()  # Blue
-  Onyx     = auto()  # Black
-  Diamond  = auto()  # White
-  Ruby     = auto()  # Red
-  Gold     = auto()  # Gold
+  Onyx = auto()  # Black
+  Diamond = auto()  # White
+  Ruby = auto()  # Red
+  Gold = auto()  # Gold
+
 
 class CardLevel(Enum):
   Level1 = 1
   Level2 = 2
   Level3 = 3
+
 
 type WinPoint = int
 
@@ -57,10 +60,10 @@ class GemStack:
 
 @dataclass(frozen=True, repr=False)
 class Card:
-  level:  CardLevel
-  gem:    Gem
+  level: CardLevel
+  gem: Gem
   points: WinPoint
-  cost:   GemStack
+  cost: GemStack
 
   def __repr__(self) -> str:
     return f"[L{self.level.value} +{self.gem.name[0]} {self.points}pt | {self.cost!r}]"
@@ -69,7 +72,7 @@ class Card:
 @dataclass(frozen=True, repr=False)
 class Noble:
   requirements: GemStack
-  points:       WinPoint
+  points: WinPoint
 
   def __repr__(self) -> str:
     return f"Noble({self.points}pt | {self.requirements!r})"
@@ -78,8 +81,10 @@ class Noble:
 type Deck = dict[CardLevel, list[Card]]
 type OptionalDeck = dict[CardLevel, list[Card | None]]
 
+
 def empty_deck() -> Deck:
   return {level: [] for level in CardLevel}
+
 
 def empty_optional_deck() -> OptionalDeck:
   return {level: [] for level in CardLevel}

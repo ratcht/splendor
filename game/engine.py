@@ -1,8 +1,8 @@
-from state import PlayerState
-from table import Table
 from actions import Action, check_nobles
-from strategy.interface import Strategy
 from dealer import Dealer
+from state import PlayerState
+from strategy.interface import Strategy
+from table import Table
 
 
 def take_turn(table: Table, action: Action) -> None:
@@ -15,8 +15,13 @@ def take_turn(table: Table, action: Action) -> None:
   table.players[table.current] = player
 
 
-def run_game(agents: list[Strategy], dealer: Dealer = None, max_turns: int = 100, verbose: bool = False) -> tuple[int, PlayerState]:
-  table     = Table(len(agents), dealer=dealer)
+def run_game(
+  agents: list[Strategy],
+  dealer: Dealer | None = None,
+  max_turns: int = 100,
+  verbose: bool = False,
+) -> tuple[int, PlayerState]:
+  table = Table(len(agents), dealer=dealer)
   game_over = False
 
   for _ in range(max_turns):

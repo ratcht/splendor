@@ -1,5 +1,5 @@
+from dealer import Dealer, RandomDealer
 from state import PlayerState, TableState
-from dealer import RandomDealer, Dealer
 
 
 class Table:
@@ -7,10 +7,10 @@ class Table:
     assert 2 <= num_players <= 4
 
     self.num_players = num_players
-    self.dealer      = dealer or RandomDealer()
-    self.board       = self.dealer.initial_board(num_players)
-    self.players     = [PlayerState() for _ in range(num_players)]
-    self.current     = 0
+    self.dealer = dealer or RandomDealer()
+    self.board = self.dealer.initial_board(num_players)
+    self.players = [PlayerState() for _ in range(num_players)]
+    self.current = 0
 
   def state(self) -> TableState:
     return TableState(self.board, self.players, self.current)
