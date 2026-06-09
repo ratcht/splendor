@@ -15,11 +15,14 @@ def take_turn(table: Table, action: Action) -> None:
   table.players[table.current] = player
 
 
-def run_game(agents: list[Strategy], dealer: Dealer = None) -> tuple[int, PlayerState]:
+def run_game(agents: list[Strategy], dealer: Dealer = None, max_turns: int = 100, verbose: bool = False) -> tuple[int, PlayerState]:
   table     = Table(len(agents), dealer=dealer)
   game_over = False
 
-  while True:
+  for _ in range(max_turns):
+    if verbose:
+      print(f"\n{table.state()!r}\n")
+
     action = agents[table.current].choose_action(table.state())
     take_turn(table, action)
 
