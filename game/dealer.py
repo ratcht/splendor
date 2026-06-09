@@ -115,7 +115,7 @@ def _find_card(raw: str, available: list[Card]) -> Card | None:
 
 
 def _prompt_card(level: CardLevel, available: list[Card]) -> Card:
-  print(f"  Format: +<gem> <pts>pt <cost>   e.g. +E 1pt 4D")
+  print("  Format: +<gem> <pts>pt <cost>   e.g. +E 1pt 4D")
   while True:
     raw = input(f"  L{level.value} card: ").strip()
     card = _find_card(raw, available)
