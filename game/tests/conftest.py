@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from dataclasses import replace
 import pytest
 
-from models import Gem, GemStack, Card, Noble, CardLevel, empty_deck
+from models import Gem, GemStack, Card, Noble, CardLevel, empty_deck, empty_optional_deck
 from state import BoardState, PlayerState
 from dealer import Dealer
 
@@ -18,28 +18,28 @@ def card(level: CardLevel = CardLevel.Level1, gem: Gem = Gem.Ruby, points: int =
 def noble(e: int = 0, s: int = 0, o: int = 0, d: int = 0, r: int = 0, points: int = 3) -> Noble:
   return Noble(requirements=GemStack(e=e, s=s, o=o, d=d, r=r), points=points)
 
-def deck_of(level1: list[Card] = (), level2: list[Card] = (), level3: list[Card] = ()):
-  return {CardLevel.Level1: list(level1), CardLevel.Level2: list(level2), CardLevel.Level3: list(level3)}
+def deck_of(level1: list[Card | None] | None = None, level2: list[Card | None] | None = None, level3: list[Card | None] | None = None):
+  return {CardLevel.Level1: list(level1 or []), CardLevel.Level2: list(level2 or []), CardLevel.Level3: list(level3 or [])}
 
-def make_board(dealt: dict[CardLevel, list[Card]] | None = None,
+def make_board(dealt: dict[CardLevel, list[Card | None]] | None = None,
                undealt: dict[CardLevel, list[Card]] | None = None,
                gems: GemStack | None = None,
-               nobles: list[Noble] = ()) -> BoardState:
+               nobles: list[Noble] | None = None) -> BoardState:
   return BoardState(
     undealt_cards=undealt if undealt is not None else empty_deck(),
-    dealt_cards=dealt if dealt is not None else empty_deck(),
-    nobles=list(nobles),
+    dealt_cards=dealt if dealt is not None else empty_optional_deck(),
+    nobles=list(nobles or []),
     available_gems=gems if gems is not None else GemStack(e=7, s=7, o=7, d=7, r=7, g=5),
   )
 
 def make_player(gems: GemStack | None = None,
-                cards: list[Card] = (),
-                reserved: list[Card] = (),
-                nobles: list[Noble] = ()) -> PlayerState:
+                cards: list[Card] | None = None,
+                reserved: list[Card] | None = None,
+                nobles: list[Noble] | None = None) -> PlayerState:
   return PlayerState(
-    cards=list(cards),
-    reserved_cards=list(reserved),
-    nobles=list(nobles),
+    cards=list(cards or []),
+    reserved_cards=list(reserved or []),
+    nobles=list(nobles or []),
     gems=gems if gems is not None else GemStack(),
   )
 

@@ -72,8 +72,6 @@ class HumanStrategy:
     board  = state.board
     player = state.players[state.current]
 
-    print(f"\n{state!r}\n")
-
     while True:
       action_type = pick(f"P{state.current + 1} action", list(ActionType), allow_back=False)
       result = build_action(action_type, board, player)

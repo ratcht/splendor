@@ -1,6 +1,6 @@
 from typing import Protocol
 from dataclasses import replace
-from models import Card, Noble, Gem, CardLevel, Deck, empty_deck, GemStack
+from models import Card, Noble, Gem, CardLevel, empty_optional_deck, GemStack
 from state import BoardState
 from presets import ALL_CARDS, ALL_NOBLES, new_deck, new_nobles, new_starting_gems, deal
 
@@ -21,14 +21,12 @@ class RandomDealer:
     )
 
   def refill(self, board: BoardState) -> BoardState:
-    dealt, undealt = {}, {}
+    dealt   = {lvl: list(cards) for lvl, cards in board.dealt_cards.items()}
+    undealt = {lvl: list(cards) for lvl, cards in board.undealt_cards.items()}
     for lvl in CardLevel:
-      d, u = board.dealt_cards[lvl], board.undealt_cards[lvl]
-      take = min(4 - len(d), len(u))
-      if take <= 0:
-        dealt[lvl], undealt[lvl] = d, u
-      else:
-        dealt[lvl], undealt[lvl] = [*d, *u[-take:]], u[:-take]
+      for i, card in enumerate(dealt[lvl]):
+        if card is None and undealt[lvl]:
+          dealt[lvl][i] = undealt[lvl].pop()
     return replace(board, dealt_cards=dealt, undealt_cards=undealt)
 
 
@@ -37,7 +35,7 @@ class RandomDealer:
 class InteractiveDealer:
   def initial_board(self, num_players: int) -> BoardState:
     print("\n=== Initial setup ===")
-    dealt   = empty_deck()
+    dealt   = empty_optional_deck()
     undealt = {lvl: list(ALL_CARDS[lvl]) for lvl in CardLevel}
 
     for lvl in reversed(CardLevel):
@@ -59,14 +57,14 @@ class InteractiveDealer:
     dealt   = {lvl: list(cards) for lvl, cards in board.dealt_cards.items()}
     undealt = {lvl: list(cards) for lvl, cards in board.undealt_cards.items()}
     for lvl in CardLevel:
-      needed = 4 - len(dealt[lvl])
-      if needed <= 0 or not undealt[lvl]:
+      holes = [i for i, card in enumerate(dealt[lvl]) if card is None]
+      if not holes or not undealt[lvl]:
         continue
-      print(f"\nL{lvl.value} needs {needed} card(s) to refill:")
-      for _ in range(needed):
+      print(f"\nL{lvl.value} needs {len(holes)} card(s) to refill:")
+      for i in holes:
         if not undealt[lvl]: break
         card = _prompt_card(lvl, undealt[lvl])
-        dealt[lvl].append(card)
+        dealt[lvl][i] = card
         undealt[lvl].remove(card)
     return replace(board, dealt_cards=dealt, undealt_cards=undealt)
 

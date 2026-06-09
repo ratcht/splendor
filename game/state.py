@@ -1,19 +1,19 @@
 from dataclasses import dataclass, field
 from collections import Counter
 from tabulate import tabulate
-from models import Card, Noble, Deck, GemStack, WinPoint, CardLevel, empty_deck
+from models import Card, Noble, Deck, OptionalDeck, GemStack, WinPoint, CardLevel, empty_deck, empty_optional_deck
 
 
 @dataclass(repr=False)
 class BoardState:
   undealt_cards:  Deck        = field(default_factory=empty_deck)
-  dealt_cards:    Deck        = field(default_factory=empty_deck)
+  dealt_cards:    OptionalDeck = field(default_factory=empty_optional_deck)
   nobles:         list[Noble] = field(default_factory=list)
   available_gems: GemStack    = field(default_factory=GemStack)
 
   def __repr__(self) -> str:
-    def fmt_card(c: Card) -> str:
-      return f"[+{c.gem.name[0]} {c.points}pt | {c.cost!r}]"
+    def fmt_card(c: Card | None) -> str:
+      return f"[+{c.gem.name[0]} {c.points}pt | {c.cost!r}]" if c else "[_]"
 
     rows = [[f"L{lvl.value}", *(fmt_card(c) for c in self.dealt_cards[lvl])] for lvl in reversed(CardLevel)]
     nobles = '  '.join(repr(n) for n in self.nobles)

@@ -1,4 +1,4 @@
-from models import Card, Noble, CardLevel, Gem, GemStack, Deck
+from models import Card, Noble, CardLevel, Gem, GemStack, Deck, OptionalDeck
 import random
 
 
@@ -162,7 +162,10 @@ def new_nobles(k: int = 5) -> list[Noble]:
 def new_starting_gems() -> GemStack:
   return GemStack(e=7, d=7, s=7, o=7, r=7, g=5)
 
-def deal(deck: Deck, n: int = 4) -> tuple[Deck, Deck]:
-  dealt     = {level: cards[:n] for level, cards in deck.items()}
-  remaining = {level: cards[n:] for level, cards in deck.items()}
+def deal(deck: Deck, n: int = 4) -> tuple[OptionalDeck, Deck]:
+  dealt: OptionalDeck = {level: [] for level in CardLevel}
+  remaining: Deck = {level: [] for level in CardLevel}
+  for level, cards in deck.items():
+    dealt[level].extend(cards[:n])
+    remaining[level].extend(cards[n:])
   return dealt, remaining

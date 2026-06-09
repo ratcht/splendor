@@ -76,6 +76,10 @@ class Noble:
 
 
 type Deck = dict[CardLevel, list[Card]]
+type OptionalDeck = dict[CardLevel, list[Card | None]]
 
 def empty_deck() -> Deck:
+  return {level: [] for level in CardLevel}
+
+def empty_optional_deck() -> OptionalDeck:
   return {level: [] for level in CardLevel}

@@ -81,7 +81,7 @@ def test_remove_card_only_rebuilds_relevant_level():
 
   result = _remove_card(dealt, c1)
 
-  assert result[CardLevel.Level1] == []
+  assert result[CardLevel.Level1] == [None]
   # Identity preserved on non-matching levels — no copy made.
   assert result[CardLevel.Level2] is dealt[CardLevel.Level2]
   assert result[CardLevel.Level3] is dealt[CardLevel.Level3]

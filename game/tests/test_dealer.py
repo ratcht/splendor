@@ -11,30 +11,36 @@ from conftest import card, make_board
 
 # ── refill behavior ───────────────────────────────────────────────────────────
 
-def test_refill_replenishes_to_four():
-  c_dealt   = [card(level=CardLevel.Level1, points=i) for i in range(2)]
-  c_undealt = [card(level=CardLevel.Level1, points=10 + i) for i in range(5)]
+def test_refill_replaces_empty_slot():
+  first       = card(level=CardLevel.Level1, points=1)
+  second      = card(level=CardLevel.Level1, points=2)
+  third       = card(level=CardLevel.Level1, points=3)
+  spare       = card(level=CardLevel.Level1, points=10)
+  replacement = card(level=CardLevel.Level1, points=11)
   board = make_board(
-    dealt   = {CardLevel.Level1: list(c_dealt), CardLevel.Level2: [], CardLevel.Level3: []},
-    undealt = {CardLevel.Level1: list(c_undealt), CardLevel.Level2: [], CardLevel.Level3: []},
+    dealt   = {CardLevel.Level1: [first, None, second, third], CardLevel.Level2: [], CardLevel.Level3: []},
+    undealt = {CardLevel.Level1: [spare, replacement],         CardLevel.Level2: [], CardLevel.Level3: []},
   )
 
   new_board = RandomDealer().refill(board)
 
-  assert len(new_board.dealt_cards[CardLevel.Level1]) == 4
-  assert len(new_board.undealt_cards[CardLevel.Level1]) == 3
+  assert new_board.dealt_cards[CardLevel.Level1] == [first, replacement, second, third]
+  assert new_board.undealt_cards[CardLevel.Level1] == [spare]
 
 
-def test_refill_noop_when_undealt_empty():
-  c_dealt = [card(points=i) for i in range(2)]  # only 2 dealt
+def test_refill_leaves_empty_slot_when_undealt_empty():
+  first  = card(points=1)
+  second = card(points=2)
+  third  = card(points=3)
+  dealt = [first, None, second, third]
   board = make_board(
-    dealt   = {CardLevel.Level1: list(c_dealt), CardLevel.Level2: [], CardLevel.Level3: []},
-    undealt = {CardLevel.Level1: [],             CardLevel.Level2: [], CardLevel.Level3: []},
+    dealt   = {CardLevel.Level1: list(dealt), CardLevel.Level2: [], CardLevel.Level3: []},
+    undealt = {CardLevel.Level1: [],          CardLevel.Level2: [], CardLevel.Level3: []},
   )
 
   new_board = RandomDealer().refill(board)
 
-  assert new_board.dealt_cards[CardLevel.Level1] == c_dealt
+  assert new_board.dealt_cards[CardLevel.Level1] == dealt
 
 
 def test_refill_does_not_touch_full_level():
@@ -52,17 +58,17 @@ def test_refill_does_not_touch_full_level():
 
 
 def test_refill_partial_when_undealt_insufficient():
-  # dealt has 2, undealt has only 1 → dealt becomes 3 (not 4), undealt becomes 0.
-  c_dealt   = [card(points=i) for i in range(2)]
-  c_undealt = [card(points=10)]
+  first       = card(points=1)
+  second      = card(points=2)
+  replacement = card(points=10)
   board = make_board(
-    dealt   = {CardLevel.Level1: list(c_dealt), CardLevel.Level2: [], CardLevel.Level3: []},
-    undealt = {CardLevel.Level1: list(c_undealt), CardLevel.Level2: [], CardLevel.Level3: []},
+    dealt   = {CardLevel.Level1: [None, first, None, second], CardLevel.Level2: [], CardLevel.Level3: []},
+    undealt = {CardLevel.Level1: [replacement],               CardLevel.Level2: [], CardLevel.Level3: []},
   )
 
   new_board = RandomDealer().refill(board)
 
-  assert len(new_board.dealt_cards[CardLevel.Level1]) == 3
+  assert new_board.dealt_cards[CardLevel.Level1] == [replacement, first, None, second]
   assert new_board.undealt_cards[CardLevel.Level1] == []
 
 

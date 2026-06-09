@@ -69,7 +69,7 @@ def test_buy_from_board_pays_and_grants_card():
 
   new_board, new_player = BuyCard(card=target).apply(board, player)
 
-  assert target not in new_board.dealt_cards[CardLevel.Level1]
+  assert new_board.dealt_cards[CardLevel.Level1] == [None]
   assert target in new_player.cards
   assert new_player.gems == GemStack()
   assert new_board.available_gems == GemStack(e=2, s=1)
@@ -117,7 +117,7 @@ def test_reserve_gains_gold_when_available():
   new_board, new_player = ReserveCard(card=target).apply(board, player)
 
   assert target in new_player.reserved_cards
-  assert target not in new_board.dealt_cards[CardLevel.Level1]
+  assert new_board.dealt_cards[CardLevel.Level1] == [None]
   assert new_player.gems == GemStack(g=1)
   assert new_board.available_gems == GemStack(g=4)
 

@@ -3,7 +3,7 @@ from enum import Enum
 from dataclasses import dataclass, field, replace
 from itertools import combinations, combinations_with_replacement, chain
 from collections import Counter
-from models import Card, Deck, Gem, GemStack
+from models import Card, OptionalDeck, Gem, GemStack
 from state import BoardState, PlayerState
 
 
@@ -40,9 +40,9 @@ def _enumerate_returns(pool: GemStack, excess: int) -> list[GemStack]:
       results.append(GemStack.from_counts(dict(counts)))
   return results
 
-def _remove_card(dealt: Deck, card: Card) -> Deck:
+def _remove_card(dealt: OptionalDeck, card: Card) -> OptionalDeck:
   return {
-    lvl: [c for c in cards if c != card] if lvl == card.level else cards
+    lvl: [None if c == card else c for c in cards] if lvl == card.level else cards
     for lvl, cards in dealt.items()
   }
 
@@ -154,7 +154,7 @@ class BuyCard(Action):
   @classmethod
   def legal_actions(cls, board: BoardState, player: PlayerState) -> list[Action]:
     candidates = chain(
-      (c for cards in board.dealt_cards.values() for c in cards),
+      (c for cards in board.dealt_cards.values() for c in cards if c is not None),
       player.reserved_cards,
     )
     return [cls(card=c) for c in candidates if _can_afford(c, player)]
@@ -182,7 +182,7 @@ class ReserveCard(Action):
   @classmethod
   def legal_actions(cls, board: BoardState, player: PlayerState) -> list[Action]:
     if len(player.reserved_cards) >= 3: return []
-    all_cards = [c for cards in board.dealt_cards.values() for c in cards]
+    all_cards = [c for cards in board.dealt_cards.values() for c in cards if c is not None]
     if not all_cards: return []
     gold_gained = 1 if board.available_gems.g > 0 else 0
     excess = max(0, player.gems.total + gold_gained - 10)
