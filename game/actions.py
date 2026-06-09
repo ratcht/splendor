@@ -180,7 +180,7 @@ class ReserveCard(Action):
     )
 
   @classmethod
-  def legal_actions(cls, board: BoardState, player: PlayerState) -> list["ReserveCard"]:
+  def legal_actions(cls, board: BoardState, player: PlayerState) -> list[Action]:
     if len(player.reserved_cards) >= 3: return []
     all_cards = [c for cards in board.dealt_cards.values() for c in cards]
     if not all_cards: return []
