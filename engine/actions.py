@@ -244,3 +244,11 @@ ACTION_TYPE_TO_CLASS: dict[ActionType, type[Action]] = {
   ActionType.Reserve: ReserveCard,
 }
 ACTION_CLASSES: list[type[Action]] = list(ACTION_TYPE_TO_CLASS.values())
+
+
+def legal_actions(board: BoardState, player: PlayerState) -> list[Action]:
+  return [
+    action
+    for action_cls in ACTION_CLASSES
+    for action in action_cls.legal_actions(board, player)
+  ]
