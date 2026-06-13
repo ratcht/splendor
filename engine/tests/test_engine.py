@@ -1,10 +1,10 @@
 import pytest
-from actions import BuyCard, ReserveCard, TakeThreeGems, TakeTwoGems
+from engine.actions import BuyCard, ReserveCard, TakeThreeGems, TakeTwoGems
 from conftest import FakeDealer, ScriptedStrategy, card, make_board, make_player, noble
-from models import Gem, GemStack
-from table import Table
+from engine.models import Gem, GemStack
+from engine.table import Table
 
-from engine import run_game, take_turn
+from engine.engine import run_game, take_turn
 
 # ── take_turn ─────────────────────────────────────────────────────────────────
 

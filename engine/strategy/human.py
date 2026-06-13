@@ -1,6 +1,6 @@
 from typing import Callable, TypeVar
 
-from actions import (
+from ..actions import (
   ACTION_TYPE_TO_CLASS,
   Action,
   ActionType,
@@ -9,7 +9,7 @@ from actions import (
   TakeThreeGems,
   TakeTwoGems,
 )
-from state import BoardState, PlayerState, TableState
+from ..state import BoardState, PlayerState, TableState
 
 T = TypeVar("T")
 BACK_KEY = "b"

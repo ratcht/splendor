@@ -1,7 +1,7 @@
 import random
 
-from actions import ACTION_CLASSES, Action
-from state import TableState
+from ..actions import ACTION_CLASSES, Action
+from ..state import TableState
 
 # ── strategy ──────────────────────────────────────────────────────────────────
 

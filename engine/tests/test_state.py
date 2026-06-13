@@ -1,4 +1,4 @@
-from models import Gem, GemStack
+from engine.models import Gem, GemStack
 
 from conftest import card, noble, make_player
 

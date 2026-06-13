@@ -1,5 +1,5 @@
-from dealer import Dealer, RandomDealer
-from state import PlayerState, TableState
+from .dealer import Dealer, RandomDealer
+from .state import PlayerState, TableState
 
 
 class Table:

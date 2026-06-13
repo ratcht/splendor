@@ -4,8 +4,8 @@ from dataclasses import dataclass, field, replace
 from enum import Enum
 from itertools import chain, combinations, combinations_with_replacement
 
-from models import Card, Gem, GemStack, OptionalDeck
-from state import BoardState, PlayerState
+from .models import Card, Gem, GemStack, OptionalDeck
+from .state import BoardState, PlayerState
 
 NON_GOLD_GEMS = [g for g in Gem if g != Gem.Gold]
 

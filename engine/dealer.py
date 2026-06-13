@@ -1,9 +1,16 @@
 from dataclasses import replace
 from typing import Protocol
 
-from models import LEVELS, Card, Gem, GemStack, Level, Noble, empty_optional_deck
-from presets import ALL_CARDS, ALL_NOBLES, deal, new_deck, new_nobles, new_starting_gems
-from state import BoardState
+from .models import LEVELS, Card, Gem, GemStack, Level, Noble, empty_optional_deck
+from .presets import (
+  ALL_CARDS,
+  ALL_NOBLES,
+  deal,
+  new_deck,
+  new_nobles,
+  new_starting_gems,
+)
+from .state import BoardState
 
 
 class Dealer(Protocol):

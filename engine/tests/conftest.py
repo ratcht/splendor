@@ -1,14 +1,9 @@
-import os
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
 from dataclasses import replace
 
 import pytest
-from dealer import Dealer
-from models import Card, Gem, GemStack, Level, Noble, empty_deck, empty_optional_deck
-from state import BoardState, PlayerState
+from engine.dealer import Dealer
+from engine.models import Card, Gem, GemStack, Level, Noble, empty_deck, empty_optional_deck
+from engine.state import BoardState, PlayerState
 
 # ── builders ──────────────────────────────────────────────────────────────────
 

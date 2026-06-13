@@ -3,9 +3,9 @@ from dataclasses import replace
 
 import pytest
 from conftest import card, make_board
-from dealer import RandomDealer
-from models import LEVELS, Gem, GemStack
-from presets import ALL_CARDS
+from engine.dealer import RandomDealer
+from engine.models import LEVELS, Gem, GemStack
+from engine.presets import ALL_CARDS
 
 # ── refill behavior ───────────────────────────────────────────────────────────
 

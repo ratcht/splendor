@@ -1,7 +1,9 @@
 from collections import Counter
 from dataclasses import dataclass, field
 
-from models import (
+from tabulate import tabulate
+
+from .models import (
   LEVELS,
   Card,
   Deck,
@@ -12,7 +14,6 @@ from models import (
   empty_deck,
   empty_optional_deck,
 )
-from tabulate import tabulate
 
 
 @dataclass(repr=False)

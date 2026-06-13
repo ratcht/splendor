@@ -1,6 +1,6 @@
 import random
 
-from models import LEVELS, Card, Deck, Gem, GemStack, Level, Noble, OptionalDeck
+from .models import LEVELS, Card, Deck, Gem, GemStack, Level, Noble, OptionalDeck
 
 E = Gem.Emerald
 D = Gem.Diamond

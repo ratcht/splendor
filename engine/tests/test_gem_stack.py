@@ -1,7 +1,7 @@
 import pytest
 from collections import Counter
 
-from models import Gem, GemStack
+from engine.models import Gem, GemStack
 
 
 def test_add_combines_per_color():

@@ -1,9 +1,9 @@
 import copy
 
 import pytest
-from actions import BuyCard, ReserveCard, TakeThreeGems, TakeTwoGems
+from engine.actions import BuyCard, ReserveCard, TakeThreeGems, TakeTwoGems
 from conftest import card, make_board, make_player
-from models import Gem, GemStack
+from engine.models import Gem, GemStack
 
 
 def test_take_two_transfers_gems():

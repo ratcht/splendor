@@ -1,7 +1,7 @@
 import pytest
-from actions import ACTION_CLASSES, BuyCard, ReserveCard, TakeThreeGems, TakeTwoGems
+from engine.actions import ACTION_CLASSES, BuyCard, ReserveCard, TakeThreeGems, TakeTwoGems
 from conftest import card, make_board, make_player
-from models import Gem, GemStack
+from engine.models import Gem, GemStack
 
 # ── TakeTwoGems ───────────────────────────────────────────────────────────────
 

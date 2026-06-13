@@ -1,8 +1,8 @@
-from actions import Action, check_nobles
-from dealer import Dealer
-from state import PlayerState
-from strategy.interface import Strategy
-from table import Table
+from .actions import Action, check_nobles
+from .dealer import Dealer
+from .state import PlayerState
+from .strategy.interface import Strategy
+from .table import Table
 
 
 def take_turn(table: Table, action: Action) -> None:

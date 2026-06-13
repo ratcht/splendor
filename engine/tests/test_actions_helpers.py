@@ -1,5 +1,5 @@
 import pytest
-from actions import (
+from engine.actions import (
   _can_afford,
   _enumerate_returns,
   _payment,
@@ -7,7 +7,7 @@ from actions import (
   check_nobles,
 )
 from conftest import card, make_board, make_player, noble
-from models import Gem, GemStack
+from engine.models import Gem, GemStack
 
 # ── _enumerate_returns ────────────────────────────────────────────────────────
 

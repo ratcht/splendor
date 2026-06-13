@@ -1,7 +1,7 @@
 from dataclasses import FrozenInstanceError
 
 import pytest
-from models import Card, Gem, GemStack, Noble
+from engine.models import Card, Gem, GemStack, Noble
 
 
 def test_card_hashable_and_usable_as_set_member():

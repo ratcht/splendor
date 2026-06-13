@@ -1,6 +1,6 @@
-from dealer import InteractiveDealer, RandomDealer
-from engine import run_game
-from strategy import HumanStrategy, RandomStrategy
+from .dealer import InteractiveDealer, RandomDealer
+from .engine import run_game
+from .strategy import HumanStrategy, RandomStrategy
 
 if __name__ == "__main__":
   # swap to InteractiveDealer() to track a real-world game
