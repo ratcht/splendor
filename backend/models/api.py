@@ -25,9 +25,22 @@ class GetGameRequest(APIModel):
   game_id: str
 
 
+class PlayerSnapshot(APIModel):
+  points: int
+  gem_count: int
+  card_count: int
+  reserved_count: int
+  noble_count: int
+
+
+class BoardSnapshot(APIModel):
+  available_gems: dict[str, int]
+
+
 class GameSnapshot(APIModel):
-  player_count: int
-  current_player: int
+  current_player_index: int
+  players: list[PlayerSnapshot]
+  board: BoardSnapshot
 
 
 class GetGameResponse(APIModel):
