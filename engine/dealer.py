@@ -1,7 +1,7 @@
 from dataclasses import replace
 from typing import Protocol
 
-from models import Card, CardLevel, Gem, GemStack, Noble, empty_optional_deck
+from models import LEVELS, Card, Gem, GemStack, Level, Noble, empty_optional_deck
 from presets import ALL_CARDS, ALL_NOBLES, deal, new_deck, new_nobles, new_starting_gems
 from state import BoardState
 
@@ -27,7 +27,7 @@ class RandomDealer:
   def refill(self, board: BoardState) -> BoardState:
     dealt = {lvl: list(cards) for lvl, cards in board.dealt_cards.items()}
     undealt = {lvl: list(cards) for lvl, cards in board.undealt_cards.items()}
-    for lvl in CardLevel:
+    for lvl in LEVELS:
       for i, card in enumerate(dealt[lvl]):
         if card is None and undealt[lvl]:
           dealt[lvl][i] = undealt[lvl].pop()
@@ -41,10 +41,10 @@ class InteractiveDealer:
   def initial_board(self, num_players: int) -> BoardState:
     print("\n=== Initial setup ===")
     dealt = empty_optional_deck()
-    undealt = {lvl: list(ALL_CARDS[lvl]) for lvl in CardLevel}
+    undealt = {lvl: list(ALL_CARDS[lvl]) for lvl in LEVELS}
 
-    for lvl in reversed(CardLevel):
-      print(f"\nDeal 4 L{lvl.value} cards:")
+    for lvl in reversed(LEVELS):
+      print(f"\nDeal 4 L{lvl} cards:")
       for _ in range(4):
         card = _prompt_card(lvl, undealt[lvl])
         dealt[lvl].append(card)
@@ -61,11 +61,11 @@ class InteractiveDealer:
   def refill(self, board: BoardState) -> BoardState:
     dealt = {lvl: list(cards) for lvl, cards in board.dealt_cards.items()}
     undealt = {lvl: list(cards) for lvl, cards in board.undealt_cards.items()}
-    for lvl in CardLevel:
+    for lvl in LEVELS:
       holes = [i for i, card in enumerate(dealt[lvl]) if card is None]
       if not holes or not undealt[lvl]:
         continue
-      print(f"\nL{lvl.value} needs {len(holes)} card(s) to refill:")
+      print(f"\nL{lvl} needs {len(holes)} card(s) to refill:")
       for i in holes:
         if not undealt[lvl]:
           break
@@ -114,14 +114,14 @@ def _find_card(raw: str, available: list[Card]) -> Card | None:
   )
 
 
-def _prompt_card(level: CardLevel, available: list[Card]) -> Card:
+def _prompt_card(level: Level, available: list[Card]) -> Card:
   print("  Format: +<gem> <pts>pt <cost>   e.g. +E 1pt 4D")
   while True:
-    raw = input(f"  L{level.value} card: ").strip()
+    raw = input(f"  L{level} card: ").strip()
     card = _find_card(raw, available)
     if card is not None:
       return card
-    print(f"  No matching L{level.value} card in remaining pool.")
+    print(f"  No matching L{level} card in remaining pool.")
 
 
 def _prompt_nobles(k: int) -> list[Noble]:

@@ -1,15 +1,15 @@
 import random
 
-from models import Card, CardLevel, Deck, Gem, GemStack, Noble, OptionalDeck
+from models import LEVELS, Card, Deck, Gem, GemStack, Level, Noble, OptionalDeck
 
 E = Gem.Emerald
 D = Gem.Diamond
 S = Gem.Sapphire
 O = Gem.Onyx
 R = Gem.Ruby
-L1 = CardLevel.Level1
-L2 = CardLevel.Level2
-L3 = CardLevel.Level3
+L1 = 1
+L2 = 2
+L3 = 3
 
 
 # ── development cards ────────────────────────────────────────────────────────
@@ -115,7 +115,7 @@ _RAW_L3 = [
 ]
 
 
-def _build_cards(raw: list, level: CardLevel) -> list[Card]:
+def _build_cards(raw: list, level: Level) -> list[Card]:
   return [
     Card(level, gem, pts, GemStack(e=e, d=d, s=s, o=o, r=r))
     for gem, pts, (e, d, s, o, r) in raw
@@ -143,9 +143,9 @@ _RAW_NOBLES = [
 # ── public ─────────────────────────────────────────────────────────
 
 ALL_CARDS: Deck = {
-  CardLevel.Level1: _build_cards(_RAW_L1, L1),
-  CardLevel.Level2: _build_cards(_RAW_L2, L2),
-  CardLevel.Level3: _build_cards(_RAW_L3, L3),
+  1: _build_cards(_RAW_L1, L1),
+  2: _build_cards(_RAW_L2, L2),
+  3: _build_cards(_RAW_L3, L3),
 }
 
 ALL_NOBLES: list[Noble] = [
@@ -170,8 +170,8 @@ def new_starting_gems() -> GemStack:
 
 
 def deal(deck: Deck, n: int = 4) -> tuple[OptionalDeck, Deck]:
-  dealt: OptionalDeck = {level: [] for level in CardLevel}
-  remaining: Deck = {level: [] for level in CardLevel}
+  dealt: OptionalDeck = {level: [] for level in LEVELS}
+  remaining: Deck = {level: [] for level in LEVELS}
   for level, cards in deck.items():
     dealt[level].extend(cards[:n])
     remaining[level].extend(cards[n:])

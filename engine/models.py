@@ -11,13 +11,10 @@ class Gem(Enum):
   Gold = auto()  # Gold
 
 
-class CardLevel(Enum):
-  Level1 = 1
-  Level2 = 2
-  Level3 = 3
-
-
+type Level = int
 type WinPoint = int
+
+LEVELS: tuple[Level, Level, Level] = (1, 2, 3)
 
 
 @dataclass(frozen=True, repr=False)
@@ -60,13 +57,13 @@ class GemStack:
 
 @dataclass(frozen=True, repr=False)
 class Card:
-  level: CardLevel
+  level: Level
   gem: Gem
   points: WinPoint
   cost: GemStack
 
   def __repr__(self) -> str:
-    return f"[L{self.level.value} +{self.gem.name[0]} {self.points}pt | {self.cost!r}]"
+    return f"[L{self.level} +{self.gem.name[0]} {self.points}pt | {self.cost!r}]"
 
 
 @dataclass(frozen=True, repr=False)
@@ -78,13 +75,13 @@ class Noble:
     return f"Noble({self.points}pt | {self.requirements!r})"
 
 
-type Deck = dict[CardLevel, list[Card]]
-type OptionalDeck = dict[CardLevel, list[Card | None]]
+type Deck = dict[Level, list[Card]]
+type OptionalDeck = dict[Level, list[Card | None]]
 
 
 def empty_deck() -> Deck:
-  return {level: [] for level in CardLevel}
+  return {level: [] for level in LEVELS}
 
 
 def empty_optional_deck() -> OptionalDeck:
-  return {level: [] for level in CardLevel}
+  return {level: [] for level in LEVELS}

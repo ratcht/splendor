@@ -1,30 +1,53 @@
-import sys, os
+import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from dataclasses import replace
+
 import pytest
-
-from models import Gem, GemStack, Card, Noble, CardLevel, empty_deck, empty_optional_deck
-from state import BoardState, PlayerState
 from dealer import Dealer
-
+from models import Card, Gem, GemStack, Level, Noble, empty_deck, empty_optional_deck
+from state import BoardState, PlayerState
 
 # ── builders ──────────────────────────────────────────────────────────────────
 
-def card(level: CardLevel = CardLevel.Level1, gem: Gem = Gem.Ruby, points: int = 0,
-         e: int = 0, s: int = 0, o: int = 0, d: int = 0, r: int = 0) -> Card:
-  return Card(level=level, gem=gem, points=points, cost=GemStack(e=e, s=s, o=o, d=d, r=r))
 
-def noble(e: int = 0, s: int = 0, o: int = 0, d: int = 0, r: int = 0, points: int = 3) -> Noble:
+def card(
+  level: Level = 1,
+  gem: Gem = Gem.Ruby,
+  points: int = 0,
+  e: int = 0,
+  s: int = 0,
+  o: int = 0,
+  d: int = 0,
+  r: int = 0,
+) -> Card:
+  return Card(
+    level=level, gem=gem, points=points, cost=GemStack(e=e, s=s, o=o, d=d, r=r)
+  )
+
+
+def noble(
+  e: int = 0, s: int = 0, o: int = 0, d: int = 0, r: int = 0, points: int = 3
+) -> Noble:
   return Noble(requirements=GemStack(e=e, s=s, o=o, d=d, r=r), points=points)
 
-def deck_of(level1: list[Card | None] | None = None, level2: list[Card | None] | None = None, level3: list[Card | None] | None = None):
-  return {CardLevel.Level1: list(level1 or []), CardLevel.Level2: list(level2 or []), CardLevel.Level3: list(level3 or [])}
 
-def make_board(dealt: dict[CardLevel, list[Card | None]] | None = None,
-               undealt: dict[CardLevel, list[Card]] | None = None,
-               gems: GemStack | None = None,
-               nobles: list[Noble] | None = None) -> BoardState:
+def deck_of(
+  level1: list[Card | None] | None = None,
+  level2: list[Card | None] | None = None,
+  level3: list[Card | None] | None = None,
+):
+  return {1: list(level1 or []), 2: list(level2 or []), 3: list(level3 or [])}
+
+
+def make_board(
+  dealt: dict[Level, list[Card | None]] | None = None,
+  undealt: dict[Level, list[Card]] | None = None,
+  gems: GemStack | None = None,
+  nobles: list[Noble] | None = None,
+) -> BoardState:
   return BoardState(
     undealt_cards=undealt if undealt is not None else empty_deck(),
     dealt_cards=dealt if dealt is not None else empty_optional_deck(),
@@ -32,10 +55,13 @@ def make_board(dealt: dict[CardLevel, list[Card | None]] | None = None,
     available_gems=gems if gems is not None else GemStack(e=7, s=7, o=7, d=7, r=7, g=5),
   )
 
-def make_player(gems: GemStack | None = None,
-                cards: list[Card] | None = None,
-                reserved: list[Card] | None = None,
-                nobles: list[Noble] | None = None) -> PlayerState:
+
+def make_player(
+  gems: GemStack | None = None,
+  cards: list[Card] | None = None,
+  reserved: list[Card] | None = None,
+  nobles: list[Noble] | None = None,
+) -> PlayerState:
   return PlayerState(
     cards=list(cards or []),
     reserved_cards=list(reserved or []),
@@ -45,6 +71,7 @@ def make_player(gems: GemStack | None = None,
 
 
 # ── mocks ─────────────────────────────────────────────────────────────────────
+
 
 class FakeDealer(Dealer):
   """Deterministic dealer. Provide an exact initial board; refill is a no-op by default."""
@@ -79,25 +106,31 @@ class ScriptedStrategy:
 
 # ── fixtures ──────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def make_card():
   return card
+
 
 @pytest.fixture
 def make_noble():
   return noble
 
+
 @pytest.fixture
 def make_board_():
   return make_board
+
 
 @pytest.fixture
 def make_player_():
   return make_player
 
+
 @pytest.fixture
 def fake_dealer():
   return FakeDealer
+
 
 @pytest.fixture
 def scripted():

@@ -10,7 +10,7 @@ Building a bot to play the board game [Splendor](https://www.youtube.com/watch?v
 
 ```
 splendor/
-├── game/              # game engine
+├── engine/              # game engine
 │   ├── models.py      # cards, gems, nobles
 │   ├── state.py       # board / player / table state
 │   ├── actions.py     # take gems, buy, reserve (+ legal action generation)
@@ -18,6 +18,7 @@ splendor/
 │   ├── engine.py      # turn + game loop
 │   ├── strategy/      # pluggable player strategies
 │   └── tests/         # pytest suite
+├── frontend/          # Next.js frontend
 └── rl-examples/       # standalone RL learning examples (Q-learning, SARSA, ...)
 ```
 
@@ -33,7 +34,7 @@ Dealers control how cards come out: `RandomDealer` shuffles for simulation, `Int
 ## Running
 
 ```bash
-cd game
+cd engine
 python main.py        # random vs random, verbose
 ```
 
@@ -42,7 +43,7 @@ Swap the strategies or dealer in `main.py` to play yourself or follow a physical
 ## Tests
 
 ```bash
-cd game
+cd engine
 python -m pytest
 ```
 

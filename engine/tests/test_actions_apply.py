@@ -1,14 +1,13 @@
 import copy
+
 import pytest
-
-from models import Gem, GemStack, CardLevel
-from actions import TakeTwoGems, TakeThreeGems, BuyCard, ReserveCard
-
+from actions import BuyCard, ReserveCard, TakeThreeGems, TakeTwoGems
 from conftest import card, make_board, make_player
+from models import Gem, GemStack
 
 
 def test_take_two_transfers_gems():
-  board  = make_board(gems=GemStack(r=7))
+  board = make_board(gems=GemStack(r=7))
   player = make_player(gems=GemStack(e=1))
 
   action = TakeTwoGems(gem=Gem.Ruby)
@@ -19,8 +18,10 @@ def test_take_two_transfers_gems():
 
 
 def test_take_two_with_returns_balances():
-  board  = make_board(gems=GemStack(r=7))
-  player = make_player(gems=GemStack(e=4, s=4))  # 8 gems; +2 ruby → 10; no return required
+  board = make_board(gems=GemStack(r=7))
+  player = make_player(
+    gems=GemStack(e=4, s=4)
+  )  # 8 gems; +2 ruby → 10; no return required
   # Force a return scenario: player at 9, +2 = 11 → must return 1.
   player = make_player(gems=GemStack(e=4, s=5))
   action = TakeTwoGems(gem=Gem.Ruby, returns=GemStack(e=1))
@@ -33,7 +34,7 @@ def test_take_two_with_returns_balances():
 
 
 def test_take_three_transfers_three_distinct():
-  board  = make_board(gems=GemStack(e=7, s=7, o=7, d=7, r=7, g=5))
+  board = make_board(gems=GemStack(e=7, s=7, o=7, d=7, r=7, g=5))
   player = make_player()
 
   action = TakeThreeGems(gems=(Gem.Emerald, Gem.Sapphire, Gem.Onyx))
@@ -44,7 +45,7 @@ def test_take_three_transfers_three_distinct():
 
 
 def test_take_three_with_returns_balances():
-  board  = make_board(gems=GemStack(e=7, s=7, o=7))
+  board = make_board(gems=GemStack(e=7, s=7, o=7))
   # Player at 9 gems; take 3 → 12; must return 2.
   player = make_player(gems=GemStack(d=5, r=4))
   action = TakeThreeGems(
@@ -60,41 +61,40 @@ def test_take_three_with_returns_balances():
 
 
 def test_buy_from_board_pays_and_grants_card():
-  target = card(level=CardLevel.Level1, gem=Gem.Ruby, points=1, e=2, s=1)
+  target = card(level=1, gem=Gem.Ruby, points=1, e=2, s=1)
   board = make_board(
-    dealt={CardLevel.Level1: [target], CardLevel.Level2: [], CardLevel.Level3: []},
+    dealt={1: [target], 2: [], 3: []},
     gems=GemStack(),
   )
   player = make_player(gems=GemStack(e=2, s=1))
 
   new_board, new_player = BuyCard(card=target).apply(board, player)
 
-  assert new_board.dealt_cards[CardLevel.Level1] == [None]
+  assert new_board.dealt_cards[1] == [None]
   assert target in new_player.cards
   assert new_player.gems == GemStack()
   assert new_board.available_gems == GemStack(e=2, s=1)
 
 
 def test_buy_from_reserve_removes_from_reserve_not_board():
-  target = card(level=CardLevel.Level2, gem=Gem.Onyx, points=2, r=3)
-  other  = card(level=CardLevel.Level2, gem=Gem.Diamond, points=0, e=2)
-  board  = make_board(dealt={CardLevel.Level1: [], CardLevel.Level2: [other], CardLevel.Level3: []},
-                      gems=GemStack())
+  target = card(level=2, gem=Gem.Onyx, points=2, r=3)
+  other = card(level=2, gem=Gem.Diamond, points=0, e=2)
+  board = make_board(dealt={1: [], 2: [other], 3: []}, gems=GemStack())
   player = make_player(gems=GemStack(r=3), reserved=[target])
 
   new_board, new_player = BuyCard(card=target).apply(board, player)
 
   # The "other" card is untouched on the board.
-  assert new_board.dealt_cards[CardLevel.Level2] == [other]
+  assert new_board.dealt_cards[2] == [other]
   assert target not in new_player.reserved_cards
   assert target in new_player.cards
 
 
 def test_buy_with_full_discount_pays_zero():
   ruby_bonus = card(gem=Gem.Ruby)
-  target = card(level=CardLevel.Level2, gem=Gem.Onyx, points=2, r=2)
+  target = card(level=2, gem=Gem.Onyx, points=2, r=2)
   board = make_board(
-    dealt={CardLevel.Level1: [], CardLevel.Level2: [target], CardLevel.Level3: []},
+    dealt={1: [], 2: [target], 3: []},
     gems=GemStack(),
   )
   player = make_player(gems=GemStack(), cards=[ruby_bonus, ruby_bonus])
@@ -109,7 +109,7 @@ def test_buy_with_full_discount_pays_zero():
 def test_reserve_gains_gold_when_available():
   target = card()
   board = make_board(
-    dealt={CardLevel.Level1: [target], CardLevel.Level2: [], CardLevel.Level3: []},
+    dealt={1: [target], 2: [], 3: []},
     gems=GemStack(g=5),
   )
   player = make_player()
@@ -117,7 +117,7 @@ def test_reserve_gains_gold_when_available():
   new_board, new_player = ReserveCard(card=target).apply(board, player)
 
   assert target in new_player.reserved_cards
-  assert new_board.dealt_cards[CardLevel.Level1] == [None]
+  assert new_board.dealt_cards[1] == [None]
   assert new_player.gems == GemStack(g=1)
   assert new_board.available_gems == GemStack(g=4)
 
@@ -125,7 +125,7 @@ def test_reserve_gains_gold_when_available():
 def test_reserve_no_gold_when_supply_empty():
   target = card()
   board = make_board(
-    dealt={CardLevel.Level1: [target], CardLevel.Level2: [], CardLevel.Level3: []},
+    dealt={1: [target], 2: [], 3: []},
     gems=GemStack(g=0),
   )
   player = make_player()
@@ -140,7 +140,7 @@ def test_reserve_no_gold_when_supply_empty():
 def test_reserve_with_returns_when_at_10_gems():
   target = card()
   board = make_board(
-    dealt={CardLevel.Level1: [target], CardLevel.Level2: [], CardLevel.Level3: []},
+    dealt={1: [target], 2: [], 3: []},
     gems=GemStack(g=5),
   )
   # Player at 10 gems; reserve gains 1 gold → 11; must return 1.
@@ -157,25 +157,34 @@ def test_reserve_with_returns_when_at_10_gems():
 
 # ── meta: apply() must not mutate its inputs ──────────────────────────────────
 
-@pytest.mark.parametrize("action_factory,player_setup", [
-  (lambda b, p: TakeTwoGems(gem=Gem.Ruby),
-   lambda: make_player()),
-  (lambda b, p: TakeThreeGems(gems=(Gem.Emerald, Gem.Sapphire, Gem.Onyx)),
-   lambda: make_player()),
-  (lambda b, p: BuyCard(card=next(iter(b.dealt_cards[CardLevel.Level1]))),
-   lambda: make_player(gems=GemStack(e=2, s=1))),
-  (lambda b, p: ReserveCard(card=next(iter(b.dealt_cards[CardLevel.Level1]))),
-   lambda: make_player()),
-])
+
+@pytest.mark.parametrize(
+  "action_factory,player_setup",
+  [
+    (lambda b, p: TakeTwoGems(gem=Gem.Ruby), lambda: make_player()),
+    (
+      lambda b, p: TakeThreeGems(gems=(Gem.Emerald, Gem.Sapphire, Gem.Onyx)),
+      lambda: make_player(),
+    ),
+    (
+      lambda b, p: BuyCard(card=next(iter(b.dealt_cards[1]))),
+      lambda: make_player(gems=GemStack(e=2, s=1)),
+    ),
+    (
+      lambda b, p: ReserveCard(card=next(iter(b.dealt_cards[1]))),
+      lambda: make_player(),
+    ),
+  ],
+)
 def test_apply_does_not_mutate_inputs(action_factory, player_setup):
-  target = card(level=CardLevel.Level1, gem=Gem.Ruby, points=1, e=2, s=1)
+  target = card(level=1, gem=Gem.Ruby, points=1, e=2, s=1)
   board = make_board(
-    dealt={CardLevel.Level1: [target], CardLevel.Level2: [], CardLevel.Level3: []},
+    dealt={1: [target], 2: [], 3: []},
   )
   player = player_setup()
   action = action_factory(board, player)
 
-  board_snapshot  = copy.deepcopy(board)
+  board_snapshot = copy.deepcopy(board)
   player_snapshot = copy.deepcopy(player)
 
   action.apply(board, player)

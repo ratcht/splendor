@@ -2,8 +2,8 @@ from collections import Counter
 from dataclasses import dataclass, field
 
 from models import (
+  LEVELS,
   Card,
-  CardLevel,
   Deck,
   GemStack,
   Noble,
@@ -27,8 +27,8 @@ class BoardState:
       return f"[+{c.gem.name[0]} {c.points}pt | {c.cost!r}]" if c else "[_]"
 
     rows = [
-      [f"L{lvl.value}", *(fmt_card(c) for c in self.dealt_cards[lvl])]
-      for lvl in reversed(CardLevel)
+      [f"L{lvl}", *(fmt_card(c) for c in self.dealt_cards[lvl])]
+      for lvl in reversed(LEVELS)
     ]
     nobles = "  ".join(repr(n) for n in self.nobles)
     return (

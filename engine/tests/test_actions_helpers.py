@@ -1,12 +1,16 @@
 import pytest
-
-from models import Gem, GemStack, CardLevel
-from actions import _enumerate_returns, _payment, _can_afford, _remove_card, check_nobles
-
-from conftest import card, noble, make_board, make_player
-
+from actions import (
+  _can_afford,
+  _enumerate_returns,
+  _payment,
+  _remove_card,
+  check_nobles,
+)
+from conftest import card, make_board, make_player, noble
+from models import Gem, GemStack
 
 # ── _enumerate_returns ────────────────────────────────────────────────────────
+
 
 def test_enumerate_returns_excess_zero_yields_single_empty():
   # Invariant: apply() always gets at least one return option, even when nothing
@@ -33,11 +37,12 @@ def test_enumerate_returns_full_multisets_no_duplicates():
 
 # ── _payment / _can_afford ────────────────────────────────────────────────────
 
+
 def test_payment_uses_discounts():
   # Card costs 3 ruby; player has 2 ruby-bonus cards → effective cost 1 ruby.
   ruby_bonus = card(gem=Gem.Ruby)
-  target     = card(r=3)
-  player     = make_player(gems=GemStack(r=2), cards=[ruby_bonus, ruby_bonus])
+  target = card(r=3)
+  player = make_player(gems=GemStack(r=2), cards=[ruby_bonus, ruby_bonus])
   pay = _payment(target, player)
   assert pay == GemStack(r=1)
 
@@ -46,25 +51,28 @@ def test_payment_uses_gold_when_short_on_regular_gems():
   target = card(r=3)
   player = make_player(gems=GemStack(r=1, g=2))
   pay = _payment(target, player)
-  assert pay.r == 1   # spent all ruby
-  assert pay.g == 2   # filled the rest with gold
+  assert pay.r == 1  # spent all ruby
+  assert pay.g == 2  # filled the rest with gold
 
 
 def test_payment_fully_discounted_returns_zero():
   ruby_card = card(gem=Gem.Ruby)
-  target    = card(r=2)
-  player    = make_player(cards=[ruby_card, ruby_card])
+  target = card(r=2)
+  player = make_player(cards=[ruby_card, ruby_card])
   pay = _payment(target, player)
   assert pay == GemStack()
 
 
-@pytest.mark.parametrize("player_ruby,player_gold,can_buy", [
-  (3, 0, True),   # exact ruby
-  (2, 1, True),   # ruby + 1 gold covers
-  (1, 1, False),  # 1+1 < 3 → not enough
-  (0, 3, True),   # all gold
-  (0, 2, False),  # 2 gold < 3 cost
-])
+@pytest.mark.parametrize(
+  "player_ruby,player_gold,can_buy",
+  [
+    (3, 0, True),  # exact ruby
+    (2, 1, True),  # ruby + 1 gold covers
+    (1, 1, False),  # 1+1 < 3 → not enough
+    (0, 3, True),  # all gold
+    (0, 2, False),  # 2 gold < 3 cost
+  ],
+)
 def test_can_afford(player_ruby, player_gold, can_buy):
   target = card(r=3)
   player = make_player(gems=GemStack(r=player_ruby, g=player_gold))
@@ -73,27 +81,29 @@ def test_can_afford(player_ruby, player_gold, can_buy):
 
 # ── _remove_card ──────────────────────────────────────────────────────────────
 
+
 def test_remove_card_only_rebuilds_relevant_level():
-  c1 = card(level=CardLevel.Level1, gem=Gem.Ruby, points=1)
-  c2 = card(level=CardLevel.Level2, gem=Gem.Onyx, points=2)
-  c3 = card(level=CardLevel.Level3, gem=Gem.Diamond, points=3)
-  dealt = {CardLevel.Level1: [c1], CardLevel.Level2: [c2], CardLevel.Level3: [c3]}
+  c1 = card(level=1, gem=Gem.Ruby, points=1)
+  c2 = card(level=2, gem=Gem.Onyx, points=2)
+  c3 = card(level=3, gem=Gem.Diamond, points=3)
+  dealt = {1: [c1], 2: [c2], 3: [c3]}
 
   result = _remove_card(dealt, c1)
 
-  assert result[CardLevel.Level1] == [None]
+  assert result[1] == [None]
   # Identity preserved on non-matching levels — no copy made.
-  assert result[CardLevel.Level2] is dealt[CardLevel.Level2]
-  assert result[CardLevel.Level3] is dealt[CardLevel.Level3]
+  assert result[2] is dealt[2]
+  assert result[3] is dealt[3]
 
 
 # ── check_nobles ──────────────────────────────────────────────────────────────
+
 
 def test_check_nobles_awards_qualifying_noble():
   ruby_card = card(gem=Gem.Ruby)
   emerald_card = card(gem=Gem.Emerald)
   qualifying = noble(r=1, e=1)
-  board  = make_board(nobles=[qualifying])
+  board = make_board(nobles=[qualifying])
   player = make_player(cards=[ruby_card, emerald_card])
 
   new_board, new_player = check_nobles(board, player)
@@ -105,7 +115,7 @@ def test_check_nobles_awards_qualifying_noble():
 def test_check_nobles_no_op_when_unqualified():
   ruby_card = card(gem=Gem.Ruby)
   too_demanding = noble(r=3, e=3)
-  board  = make_board(nobles=[too_demanding])
+  board = make_board(nobles=[too_demanding])
   player = make_player(cards=[ruby_card])
 
   new_board, new_player = check_nobles(board, player)
@@ -120,7 +130,7 @@ def test_check_nobles_picks_first_when_multiple_qualify():
   cards = [card(gem=Gem.Ruby), card(gem=Gem.Emerald)]
   n1 = noble(r=1, e=1, points=3)
   n2 = noble(r=1, e=1, points=4)  # different points so we can distinguish
-  board  = make_board(nobles=[n1, n2])
+  board = make_board(nobles=[n1, n2])
   player = make_player(cards=cards)
 
   new_board, new_player = check_nobles(board, player)
