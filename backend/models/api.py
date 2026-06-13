@@ -19,3 +19,12 @@ class CreateGameRequest(APIModel):
 
 class CreateGameResponse(APIModel):
   game_id: str
+
+
+class GetGameRequest(APIModel):
+  game_id: str
+
+
+class GetGameResponse(APIModel):
+  player_count: int
+  current_player: int

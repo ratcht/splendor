@@ -4,6 +4,6 @@ import engine
 
 
 @dataclass
-class GameSession:
+class Game:
   id: str
   table: engine.Table
