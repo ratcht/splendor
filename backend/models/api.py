@@ -25,6 +25,10 @@ class GetGameRequest(APIModel):
   game_id: str
 
 
-class GetGameResponse(APIModel):
+class GameSnapshot(APIModel):
   player_count: int
   current_player: int
+
+
+class GetGameResponse(APIModel):
+  snapshot: GameSnapshot

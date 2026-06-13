@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 import engine
 
+from . import adapters
 from .game import GameStore, get_game_store
 from .models.api import (
   CreateGameRequest,
@@ -41,7 +42,4 @@ def get_game(
   game = store.get(request.game_id)
   if game is None:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="game not found")
-  return GetGameResponse(
-    player_count=game.table.num_players,
-    current_player=game.table.current,
-  )
+  return adapters.table_to_get_game_response(game.table)
