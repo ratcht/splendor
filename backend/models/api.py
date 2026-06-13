@@ -21,10 +21,6 @@ class CreateGameResponse(APIModel):
   game_id: str
 
 
-class GetGameRequest(APIModel):
-  game_id: str
-
-
 class PlayerSnapshot(APIModel):
   points: int
   gem_count: int

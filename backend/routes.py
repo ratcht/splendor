@@ -9,7 +9,6 @@ from .game import GameStore, get_game_store
 from .models.api import (
   CreateGameRequest,
   CreateGameResponse,
-  GetGameRequest,
   GetGameResponse,
 )
 
@@ -30,16 +29,12 @@ def create_game(
   return CreateGameResponse(game_id=game.id)
 
 
-def get_game_request(game_id: str) -> GetGameRequest:
-  return GetGameRequest(game_id=game_id)
-
-
 @router.get("/games/{game_id}")
 def get_game(
-  request: Annotated[GetGameRequest, Depends(get_game_request)],
+  game_id: str,
   store: Annotated[GameStore, Depends(get_game_store)],
 ) -> GetGameResponse:
-  game = store.get(request.game_id)
+  game = store.get(game_id)
   if game is None:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="game not found")
   return adapters.table_to_get_game_response(game.table)
