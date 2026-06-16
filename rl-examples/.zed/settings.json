@@ -1,0 +1,15 @@
+{
+	"languages": {
+		"Python": {
+			"format_on_save": "on",
+			"auto_indent_on_paste": false,
+			"auto_indent": "none",
+			"tab_size": 2,
+			"formatter": "language_server"
+		}
+	},
+	"auto_indent": "none",
+	"auto_indent_on_paste": true,
+	"tab_size": 2,
+	"hard_tabs": false,
+}
