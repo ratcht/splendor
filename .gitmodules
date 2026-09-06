@@ -1,3 +1,3 @@
-[submodule "rl"]
-	path = rl-examples
+[submodule "rl/examples"]
+	path = rl/examples
 	url = https://github.com/ratcht/rl
