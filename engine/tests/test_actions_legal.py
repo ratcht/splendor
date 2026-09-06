@@ -117,6 +117,48 @@ def test_reserve_enumerates_returns_when_at_10_gems():
   assert len(actions) == 6
 
 
+# ── gem limit ─────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize("held,expected", [(8, True), (9, False)])
+def test_take_two_respects_limit(held, expected):
+  board = make_board()
+  player = make_player(gems=GemStack(e=held))
+  assert TakeTwoGems(gem=Gem.Ruby).is_valid(board, player) == expected
+
+
+@pytest.mark.parametrize("held,expected", [(7, True), (8, False)])
+def test_take_three_respects_limit(held, expected):
+  board = make_board()
+  player = make_player(gems=GemStack(e=held))
+  action = TakeThreeGems(gems=(Gem.Emerald, Gem.Sapphire, Gem.Onyx))
+  assert action.is_valid(board, player) == expected
+
+
+def test_reserve_at_limit_blocked_when_gold_available():
+  c = card()
+  board = make_board(dealt={1: [c], 2: [], 3: []}, gems=GemStack(g=5))
+  player = make_player(gems=GemStack(e=2, s=2, o=2, d=2, r=2))
+  assert not ReserveCard(card=c).is_valid(board, player)
+
+
+def test_reserve_at_limit_allowed_when_no_gold():
+  c = card()
+  board = make_board(dealt={1: [c], 2: [], 3: []}, gems=GemStack(g=0))
+  player = make_player(gems=GemStack(e=2, s=2, o=2, d=2, r=2))
+  assert ReserveCard(card=c).is_valid(board, player)
+
+
+def test_returns_offset_the_limit():
+  # Enumerated actions carry returns sized to absorb the excess, so they stay valid.
+  board = make_board()
+  player = make_player(gems=GemStack(e=5, s=5))
+  action = TakeThreeGems(
+    gems=(Gem.Emerald, Gem.Sapphire, Gem.Onyx), returns=GemStack(e=3)
+  )
+  assert action.is_valid(board, player)
+
+
 # ── meta-tests across action classes ──────────────────────────────────────────
 
 

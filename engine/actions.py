@@ -8,6 +8,7 @@ from .models import Card, Gem, GemStack, OptionalDeck
 from .state import BoardState, PlayerState
 
 NON_GOLD_GEMS = [g for g in Gem if g != Gem.Gold]
+GEM_LIMIT = 10
 
 
 class ActionType(Enum):
@@ -94,7 +95,10 @@ class TakeTwoGems(Action):
   returns: GemStack = field(default_factory=GemStack)
 
   def is_valid(self, board: BoardState, player: PlayerState) -> bool:
-    return board.available_gems[self.gem] >= 4
+    return (
+      board.available_gems[self.gem] >= 4
+      and player.gems.total + 2 - self.returns.total <= GEM_LIMIT
+    )
 
   def apply(
     self, board: BoardState, player: PlayerState
@@ -110,7 +114,7 @@ class TakeTwoGems(Action):
     eligible = [g for g in NON_GOLD_GEMS if board.available_gems[g] >= 4]
     if not eligible:
       return []
-    excess = max(0, player.gems.total + 2 - 10)
+    excess = max(0, player.gems.total + 2 - GEM_LIMIT)
     return [
       cls(gem=gem, returns=returns)
       for gem in eligible
@@ -126,8 +130,10 @@ class TakeThreeGems(Action):
   returns: GemStack = field(default_factory=GemStack)
 
   def is_valid(self, board: BoardState, player: PlayerState) -> bool:
-    return len(set(self.gems)) == 3 and all(
-      board.available_gems[g] >= 1 for g in self.gems
+    return (
+      len(set(self.gems)) == 3
+      and all(board.available_gems[g] >= 1 for g in self.gems)
+      and player.gems.total + 3 - self.returns.total <= GEM_LIMIT
     )
 
   def apply(
@@ -144,7 +150,7 @@ class TakeThreeGems(Action):
     eligible = [g for g in NON_GOLD_GEMS if board.available_gems[g] >= 1]
     if len(eligible) < 3:
       return []
-    excess = max(0, player.gems.total + 3 - 10)
+    excess = max(0, player.gems.total + 3 - GEM_LIMIT)
     return [
       cls(gems=gems, returns=returns)
       for gems in combinations(eligible, 3)
@@ -198,7 +204,12 @@ class ReserveCard(Action):
 
   def is_valid(self, board: BoardState, player: PlayerState) -> bool:
     on_board = any(self.card in cards for cards in board.dealt_cards.values())
-    return on_board and len(player.reserved_cards) < 3
+    gold = 1 if board.available_gems.g > 0 else 0
+    return (
+      on_board
+      and len(player.reserved_cards) < 3
+      and player.gems.total + gold - self.returns.total <= GEM_LIMIT
+    )
 
   def apply(
     self, board: BoardState, player: PlayerState
@@ -228,7 +239,7 @@ class ReserveCard(Action):
     if not all_cards:
       return []
     gold_gained = 1 if board.available_gems.g > 0 else 0
-    excess = max(0, player.gems.total + gold_gained - 10)
+    excess = max(0, player.gems.total + gold_gained - GEM_LIMIT)
     pool = player.gems + GemStack(g=gold_gained)
     return [
       cls(card=card, returns=returns)
