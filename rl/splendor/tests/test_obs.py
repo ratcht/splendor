@@ -4,6 +4,7 @@ import numpy as np
 from engine import (
   NON_GOLD_GEMS,
   BoardState,
+  BuyCard,
   Card,
   Gem,
   GemStack,
@@ -133,6 +134,7 @@ def test_card_slots_align_with_buy_action_indices():
         if action is None:
           assert not block.any()
           continue
+        assert isinstance(action, BuyCard)
         for i, g in enumerate(NON_GOLD_GEMS):
           assert block[i] == action.card.cost[g]
         assert block[10] == action.card.points
