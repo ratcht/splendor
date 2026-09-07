@@ -165,8 +165,9 @@ def new_nobles(k: int = 5) -> list[Noble]:
   return random.sample(ALL_NOBLES, k=k)
 
 
-def new_starting_gems() -> GemStack:
-  return GemStack(e=7, d=7, s=7, o=7, r=7, g=5)
+def new_starting_gems(num_players: int) -> GemStack:
+  n = {2: 4, 3: 5, 4: 7}[num_players]
+  return GemStack(e=n, d=n, s=n, o=n, r=n, g=5)
 
 
 def deal(deck: Deck, n: int = 4) -> tuple[OptionalDeck, Deck]:

@@ -5,7 +5,7 @@ import pytest
 from conftest import card, make_board
 from engine.dealer import RandomDealer
 from engine.models import LEVELS, Gem, GemStack
-from engine.presets import ALL_CARDS
+from engine.presets import ALL_CARDS, new_starting_gems
 
 # ── refill behavior ───────────────────────────────────────────────────────────
 
@@ -86,4 +86,11 @@ def test_initial_board_structure():
     assert len(union) == len(ALL_CARDS[lvl])  # no duplication
 
   assert len(board.nobles) == 3  # num_players + 1
-  assert board.available_gems == GemStack(e=7, s=7, o=7, d=7, r=7, g=5)
+  assert board.available_gems == GemStack(e=4, s=4, o=4, d=4, r=4, g=5)
+
+
+@pytest.mark.parametrize("num_players,expected", [(2, 4), (3, 5), (4, 7)])
+def test_starting_gems_scale_with_player_count(num_players, expected):
+  gems = new_starting_gems(num_players)
+  assert all(gems[g] == expected for g in Gem if g != Gem.Gold)
+  assert gems.g == 5

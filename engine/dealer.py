@@ -28,7 +28,7 @@ class RandomDealer:
       undealt_cards=remaining,
       dealt_cards=dealt,
       nobles=new_nobles(k=num_players + 1),
-      available_gems=new_starting_gems(),
+      available_gems=new_starting_gems(num_players),
     )
 
   def refill(self, board: BoardState) -> BoardState:
@@ -62,7 +62,7 @@ class InteractiveDealer:
       undealt_cards=undealt,
       dealt_cards=dealt,
       nobles=nobles,
-      available_gems=new_starting_gems(),
+      available_gems=new_starting_gems(num_players),
     )
 
   def refill(self, board: BoardState) -> BoardState:
