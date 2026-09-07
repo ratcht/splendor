@@ -31,7 +31,8 @@ def run_game(
       print(f"\n{table.state()!r}\n")
 
     action = agents[table.current].choose_action(table.state())
-    take_turn(table, action)
+    if action is not None:
+      take_turn(table, action)
 
     if table.players[table.current].points >= WIN_POINTS:
       game_over = True
