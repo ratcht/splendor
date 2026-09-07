@@ -1,3 +1,5 @@
+from typing import cast
+
 import pytest
 from engine.actions import ACTION_CLASSES, BuyCard, ReserveCard, TakeThreeGems, TakeTwoGems
 from conftest import card, make_board, make_player
@@ -41,7 +43,7 @@ def test_take_three_enumerates_returns_when_over_10():
   # Player at 9 gems; takes 3 → 12; must return 2 from a 7-gem pool.
   board = make_board(gems=GemStack(e=1, s=1, o=1))
   player = make_player(gems=GemStack(d=4, r=5))  # 9 gems, no overlap with takes
-  actions = TakeThreeGems.legal_actions(board, player)
+  actions = cast(list[TakeThreeGems], TakeThreeGems.legal_actions(board, player))
 
   # One triple is possible (E,S,O), and after taking the pool is {d:4, r:5, e:1, s:1, o:1}
   # excess=2 → multisets of size 2 capped by pool counts.
@@ -64,7 +66,7 @@ def test_buy_includes_board_and_reserved():
     dealt={1: [on_board], 2: [], 3: []},
   )
   player = make_player(gems=GemStack(r=1, e=1), reserved=[reserved])
-  actions = BuyCard.legal_actions(board, player)
+  actions = cast(list[BuyCard], BuyCard.legal_actions(board, player))
   buys = {a.card for a in actions}
   assert buys == {on_board, reserved}
 
@@ -76,7 +78,7 @@ def test_buy_excludes_unaffordable():
     dealt={1: [cheap, expensive], 2: [], 3: []},
   )
   player = make_player(gems=GemStack(r=1))
-  actions = BuyCard.legal_actions(board, player)
+  actions = cast(list[BuyCard], BuyCard.legal_actions(board, player))
   assert [a.card for a in actions] == [cheap]
 
 

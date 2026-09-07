@@ -7,7 +7,7 @@ from engine.actions import (
   check_nobles,
 )
 from conftest import card, make_board, make_player, noble
-from engine.models import Gem, GemStack
+from engine.models import Gem, GemStack, OptionalDeck
 
 # ── _enumerate_returns ────────────────────────────────────────────────────────
 
@@ -86,7 +86,7 @@ def test_remove_card_only_rebuilds_relevant_level():
   c1 = card(level=1, gem=Gem.Ruby, points=1)
   c2 = card(level=2, gem=Gem.Onyx, points=2)
   c3 = card(level=3, gem=Gem.Diamond, points=3)
-  dealt = {1: [c1], 2: [c2], 3: [c3]}
+  dealt: OptionalDeck = {1: [c1], 2: [c2], 3: [c3]}
 
   result = _remove_card(dealt, c1)
 
