@@ -122,7 +122,7 @@ def test_seat_swaps_player_and_reserved_blocks():
 
 
 def test_card_slots_align_with_buy_action_indices():
-  # If these drift, the policy reads one card and acts on another, silently.
+  # if these drift the policy reads one card and acts on another
   rng = random.Random(1)
   for _ in range(10):
     table = Table(2)

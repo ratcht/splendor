@@ -3,7 +3,16 @@ from typing import Any
 
 import gymnasium as gym
 import numpy as np
-from engine import WIN_POINTS, PlayerState, RandomDealer, Table, TableState, take_turn
+from engine import (
+  WIN_POINTS,
+  Action,
+  PlayerState,
+  RandomDealer,
+  RandomStrategy,
+  Strategy,
+  Table,
+  take_turn,
+)
 
 from .actions import N_ACTIONS, PASS, action_mask, decode
 from .obs import N_OBS, encode
@@ -14,10 +23,6 @@ NUM_PLAYERS = 2
 type Obs = dict[str, np.ndarray]
 
 
-def random_opponent(state: TableState, mask: np.ndarray, rng: np.random.Generator) -> int:
-  return int(rng.choice(np.flatnonzero(mask)))
-
-
 def _score(player: PlayerState) -> tuple[int, int]:
   """Engine's tie-break: more points, then fewer cards."""
   return player.points, -len(player.cards)
@@ -26,8 +31,8 @@ def _score(player: PlayerState) -> tuple[int, int]:
 class SplendorEnv(gym.Env[Obs, int]):
   """Two-player Splendor. The learner is seat 0; the opponent plays inside step()."""
 
-  def __init__(self, opponent=random_opponent, max_turns: int = 200):
-    self.opponent = opponent
+  def __init__(self, opponent: Strategy | None = None, max_turns: int = 200):
+    self._opponent = opponent
     self.max_turns = max_turns
     self.action_space = gym.spaces.Discrete(N_ACTIONS)
     self.observation_space = gym.spaces.Dict(
@@ -41,32 +46,35 @@ class SplendorEnv(gym.Env[Obs, int]):
     self, *, seed: int | None = None, options: dict[str, Any] | None = None
   ) -> tuple[Obs, dict[str, Any]]:
     super().reset(seed=seed)
-    # the deal needs a python Random; derive it so reset(seed=n) is reproducible
-    deal_rng = random.Random(int(self.np_random.integers(2**32)))
-    self.table = Table(NUM_PLAYERS, dealer=RandomDealer(deal_rng))
+    # one Random for the deal and the opponent, so reset(seed=n) is reproducible
+    rng = random.Random(int(self.np_random.integers(2**32)))
+    self.table = Table(NUM_PLAYERS, dealer=RandomDealer(rng))
+    self.opponent = self._opponent or RandomStrategy(rng)
     self.turns = 0
     self.reached_target = False
     self.done = False
     return self._obs(), {}
 
   def step(self, action: int) -> tuple[Obs, float, bool, bool, dict[str, Any]]:
-    self._take(int(action))
+    self._apply(self._learner_action(int(action)))
     while not self.done and self.table.current != LEARNER:
-      player = self.table.players[self.table.current]
-      mask = action_mask(self.table.board, player)
-      self._take(self.opponent(self.table.state(), mask, self.np_random))
+      self._apply(self.opponent.choose_action(self.table.state()))
 
     self.turns += 1
     truncated = not self.done and self.turns >= self.max_turns
     reward = self._reward() if self.done else 0.0
     return self._obs(), reward, self.done, truncated, {}
 
-  def _take(self, index: int) -> None:
-    player = self.table.players[self.table.current]
-    if index != PASS:
-      action = decode(index, self.table.board, player)
-      if action is None:
-        raise ValueError(f"no action at index {index}")
+  def _learner_action(self, index: int) -> Action | None:
+    if index == PASS:
+      return None
+    action = decode(index, self.table.board, self.table.players[self.table.current])
+    if action is None:
+      raise ValueError(f"no action at index {index}")
+    return action
+
+  def _apply(self, action: Action | None) -> None:
+    if action is not None:
       take_turn(self.table, action)
     if self.table.players[self.table.current].points >= WIN_POINTS:
       self.reached_target = True

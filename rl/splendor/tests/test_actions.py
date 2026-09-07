@@ -21,11 +21,7 @@ def no_returns(action) -> bool:
 
 
 def walk(rng: random.Random, table: Table, steps: int):
-  """Yield states from a random game, picking an action type before an action.
-
-  Sampling the flat legal_actions list is ~84% TakeThreeGems, so buy and
-  reserve slots would barely be exercised.
-  """
+  """Yield states from a random game, picking an action type before an action."""
   for _ in range(steps):
     player = table.players[table.current]
     actions = legal_actions(table.board, player)
@@ -71,8 +67,7 @@ def test_decode_none_for_empty_slots():
 
 
 def test_mask_matches_engine_legality():
-  # The load-bearing invariant: our 42-slot mask is exactly the set of engine
-  # legal actions that need no gem returns.
+  # the mask must equal exactly the legal actions that need no gem returns
   rng = random.Random(0)
   for _ in range(20):
     for board, player in walk(rng, Table(2), steps=60):

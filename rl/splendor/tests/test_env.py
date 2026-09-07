@@ -1,6 +1,7 @@
 import gymnasium as gym
 import numpy as np
 import pytest
+from engine import legal_actions
 from rl.splendor.actions import N_ACTIONS, PASS
 from rl.splendor.env import LEARNER, SplendorEnv
 
@@ -19,10 +20,7 @@ def play(env, seed, rng, limit=500):
 
 
 def test_illegal_action_raises():
-  # Loud on purpose. Coercing an illegal action to a no-op would hide a broken
-  # mask and let the policy train against rules the engine does not enforce.
-  # This is also why gymnasium's check_env cannot be used here: it samples the
-  # action space uniformly, ignoring the mask.
+  # coercing an illegal action to a no-op would hide a broken mask
   env = SplendorEnv()
   obs, _ = env.reset(seed=0)
   illegal = int(np.flatnonzero(1 - obs["action_mask"])[0])
@@ -88,14 +86,27 @@ def test_pass_is_accepted():
   assert env.table.players[LEARNER].gems == before
 
 
-def test_opponent_is_pluggable():
+def test_opponent_is_an_engine_strategy():
   calls = []
 
-  def spy(state, mask, rng):
-    calls.append(state.current)
-    return int(np.flatnonzero(mask)[0])
+  class Spy:
+    def choose_action(self, state):
+      calls.append(state.current)
+      return legal_actions(state.board, state.players[state.current])[0]
 
-  env = SplendorEnv(opponent=spy)
+  env = SplendorEnv(opponent=Spy())
   obs, _ = env.reset(seed=0)
   env.step(int(np.flatnonzero(obs["action_mask"])[0]))
   assert calls == [1]  # opponent played exactly one turn, from seat 1
+
+
+def test_opponent_may_pass():
+  class AlwaysPasses:
+    def choose_action(self, state):
+      return None
+
+  env = SplendorEnv(opponent=AlwaysPasses())
+  obs, _ = env.reset(seed=0)
+  before = env.table.players[1].gems
+  env.step(int(np.flatnonzero(obs["action_mask"])[0]))
+  assert env.table.players[1].gems == before

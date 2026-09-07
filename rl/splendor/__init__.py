@@ -1,5 +1,5 @@
 from .actions import N_ACTIONS, PASS, TAKE3_COMBOS, action_mask, decode, face_up
-from .env import SplendorEnv, random_opponent
+from .env import SplendorEnv
 from .obs import N_OBS, encode
 
 __all__ = [
@@ -12,5 +12,4 @@ __all__ = [
   "decode",
   "encode",
   "face_up",
-  "random_opponent",
 ]

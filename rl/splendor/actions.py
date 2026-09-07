@@ -1,3 +1,13 @@
+"""Fixed action index space.
+
+   0-4   take 2 of NON_GOLD_GEMS[i]
+   5-14  take 3 of TAKE3_COMBOS[i]
+  15-26  buy face-up slot
+  27-29  buy reserved slot
+  30-41  reserve face-up slot
+     42  pass
+"""
+
 from itertools import combinations
 
 import numpy as np
@@ -18,14 +28,6 @@ TAKE3_COMBOS = list(combinations(NON_GOLD_GEMS, 3))
 PASS = 42
 N_ACTIONS = 43
 
-# index layout
-#   0-4   take 2 of NON_GOLD_GEMS[i]
-#   5-14  take 3 of TAKE3_COMBOS[i]
-#  15-26  buy face-up slot
-#  27-29  buy reserved slot
-#  30-41  reserve face-up slot
-#     42  pass
-
 
 def face_up(board: BoardState, slot: int) -> Card | None:
   """Board slot 0-11 -> the card there. Shared with obs.py so both agree."""
@@ -35,10 +37,7 @@ def face_up(board: BoardState, slot: int) -> Card | None:
 
 
 def decode(index: int, board: BoardState, player: PlayerState) -> Action | None:
-  """Map a fixed action index onto an engine action.
-
-  None means the index has no engine action: an empty card slot, or PASS.
-  """
+  """Index -> engine action. None for an empty slot or for PASS."""
   if index == PASS:
     return None
   if index < 5:
@@ -61,5 +60,5 @@ def action_mask(board: BoardState, player: PlayerState) -> np.ndarray:
   for i in range(PASS):
     action = decode(i, board, player)
     mask[i] = action is not None and action.is_valid(board, player)
-  mask[PASS] = not mask.any()  # only when the player is otherwise stuck
+  mask[PASS] = not mask.any()
   return mask
