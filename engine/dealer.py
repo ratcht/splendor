@@ -1,3 +1,4 @@
+import random
 from dataclasses import replace
 from typing import Protocol
 
@@ -22,12 +23,15 @@ class Dealer(Protocol):
 
 
 class RandomDealer:
+  def __init__(self, rng: random.Random | None = None):
+    self.rng = rng or random.Random()
+
   def initial_board(self, num_players: int) -> BoardState:
-    dealt, remaining = deal(new_deck())
+    dealt, remaining = deal(new_deck(self.rng))
     return BoardState(
       undealt_cards=remaining,
       dealt_cards=dealt,
-      nobles=new_nobles(k=num_players + 1),
+      nobles=new_nobles(k=num_players + 1, rng=self.rng),
       available_gems=new_starting_gems(num_players),
     )
 

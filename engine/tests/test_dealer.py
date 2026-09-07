@@ -75,8 +75,7 @@ def test_refill_partial_when_undealt_insufficient():
 
 
 def test_initial_board_structure():
-  random.seed(0)  # deterministic shuffle
-  board = RandomDealer().initial_board(num_players=2)
+  board = RandomDealer(random.Random(0)).initial_board(num_players=2)
 
   for lvl in LEVELS:
     assert len(board.dealt_cards[lvl]) == 4

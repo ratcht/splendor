@@ -154,15 +154,15 @@ ALL_NOBLES: list[Noble] = [
 ]
 
 
-def new_deck() -> Deck:
+def new_deck(rng: random.Random) -> Deck:
   deck = {level: cards.copy() for level, cards in ALL_CARDS.items()}
   for cards in deck.values():
-    random.shuffle(cards)
+    rng.shuffle(cards)
   return deck
 
 
-def new_nobles(k: int = 5) -> list[Noble]:
-  return random.sample(ALL_NOBLES, k=k)
+def new_nobles(k: int, rng: random.Random) -> list[Noble]:
+  return rng.sample(ALL_NOBLES, k=k)
 
 
 def new_starting_gems(num_players: int) -> GemStack:

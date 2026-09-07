@@ -4,6 +4,8 @@ from .state import PlayerState
 from .strategy.interface import Strategy
 from .table import Table
 
+WIN_POINTS = 15
+
 
 def take_turn(table: Table, action: Action) -> None:
   player = table.players[table.current]
@@ -31,7 +33,7 @@ def run_game(
     action = agents[table.current].choose_action(table.state())
     take_turn(table, action)
 
-    if table.players[table.current].points >= 15:
+    if table.players[table.current].points >= WIN_POINTS:
       game_over = True
 
     if game_over and table.current == table.num_players - 1:
