@@ -257,6 +257,21 @@ ACTION_TYPE_TO_CLASS: dict[ActionType, type[Action]] = {
 ACTION_CLASSES: list[type[Action]] = list(ACTION_TYPE_TO_CLASS.values())
 
 
+def primary_key(action: Action) -> tuple:
+  """Identity of a decision, ignoring which gems are handed back."""
+  match action:
+    case TakeTwoGems(gem=gem):
+      return (TakeTwoGems, gem)
+    case TakeThreeGems(gems=gems):
+      return (TakeThreeGems, gems)
+    case BuyCard(card=card):
+      return (BuyCard, card)
+    case ReserveCard(card=card):
+      return (ReserveCard, card)
+    case _:
+      return (type(action), repr(action))
+
+
 def legal_actions(board: BoardState, player: PlayerState) -> list[Action]:
   return [
     action

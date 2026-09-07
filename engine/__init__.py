@@ -7,11 +7,13 @@ from .actions import (
   TakeThreeGems,
   TakeTwoGems,
   legal_actions,
+  primary_key,
 )
 from .dealer import Dealer, RandomDealer
 from .engine import WIN_POINTS, run_game, take_turn
 from .models import LEVELS, Card, Gem, GemStack, Noble
 from .state import BoardState, PlayerState, TableState
+from .strategy import RandomStrategy, Strategy
 from .table import Table
 
 __all__ = [
@@ -27,14 +29,17 @@ __all__ = [
   "GemStack",
   "Noble",
   "PlayerState",
+  "RandomStrategy",
   "RandomDealer",
   "ReserveCard",
   "Table",
   "TableState",
   "TakeThreeGems",
+  "Strategy",
   "TakeTwoGems",
   "WIN_POINTS",
   "legal_actions",
+  "primary_key",
   "run_game",
   "take_turn",
 ]
