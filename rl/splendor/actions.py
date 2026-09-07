@@ -27,7 +27,8 @@ N_ACTIONS = 43
 #     42  pass
 
 
-def _face_up(board: BoardState, slot: int) -> Card | None:
+def face_up(board: BoardState, slot: int) -> Card | None:
+  """Board slot 0-11 -> the card there. Shared with obs.py so both agree."""
   cards = board.dealt_cards[LEVELS[slot // 4]]
   pos = slot % 4
   return cards[pos] if pos < len(cards) else None
@@ -45,13 +46,13 @@ def decode(index: int, board: BoardState, player: PlayerState) -> Action | None:
   if index < 15:
     return TakeThreeGems(gems=TAKE3_COMBOS[index - 5])
   if index < 27:
-    card = _face_up(board, index - 15)
+    card = face_up(board, index - 15)
     return BuyCard(card=card) if card else None
   if index < 30:
     slot = index - 27
     reserved = player.reserved_cards
     return BuyCard(card=reserved[slot]) if slot < len(reserved) else None
-  card = _face_up(board, index - 30)
+  card = face_up(board, index - 30)
   return ReserveCard(card=card) if card else None
 
 
