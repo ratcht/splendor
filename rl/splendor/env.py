@@ -1,5 +1,5 @@
 import random
-from typing import Any
+from typing import Any, Callable
 
 import gymnasium as gym
 import numpy as np
@@ -21,12 +21,13 @@ LEARNER = 0
 NUM_PLAYERS = 2
 
 type Obs = dict[str, np.ndarray]
+type OpponentSource = Callable[[random.Random], Strategy]
 
 
 class SplendorEnv(gym.Env[Obs, int]):
   """Two-player Splendor. The learner is seat 0; the opponent plays inside step()."""
 
-  def __init__(self, opponent: Strategy | None = None, max_turns: int = 200):
+  def __init__(self, opponent: OpponentSource = RandomStrategy, max_turns: int = 200):
     self._opponent = opponent
     self.max_turns = max_turns
     self.action_space = gym.spaces.Discrete(N_ACTIONS)
@@ -44,7 +45,7 @@ class SplendorEnv(gym.Env[Obs, int]):
     # one Random for the deal and the opponent, so reset(seed=n) is reproducible
     rng = random.Random(int(self.np_random.integers(2**32)))
     self.table = Table(NUM_PLAYERS, dealer=RandomDealer(rng))
-    self.opponent = self._opponent or RandomStrategy(rng)
+    self.opponent = self._opponent(rng)
     self.turns = 0
     self.reached_target = False
     self.done = False

@@ -94,7 +94,7 @@ def test_opponent_is_an_engine_strategy():
       calls.append(state.current)
       return legal_actions(state.board, state.players[state.current])[0]
 
-  env = SplendorEnv(opponent=Spy())
+  env = SplendorEnv(opponent=lambda _: Spy())
   obs, _ = env.reset(seed=0)
   env.step(int(np.flatnonzero(obs["action_mask"])[0]))
   assert calls == [1]  # opponent played exactly one turn, from seat 1
@@ -105,7 +105,7 @@ def test_opponent_may_pass():
     def choose_action(self, state):
       return None
 
-  env = SplendorEnv(opponent=AlwaysPasses())
+  env = SplendorEnv(opponent=lambda _: AlwaysPasses())
   obs, _ = env.reset(seed=0)
   before = env.table.players[1].gems
   env.step(int(np.flatnonzero(obs["action_mask"])[0]))
