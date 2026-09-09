@@ -1,9 +1,11 @@
+from pathlib import Path
 from typing import Annotated
 
 import torch as t
 import torch.nn as nn
 
 DEVICE = "cuda" if t.cuda.is_available() else "cpu"
+CHECKPOINTS = Path(__file__).parent / "checkpoints"
 
 
 class PPO(nn.Module):
@@ -36,6 +38,26 @@ class PPO(nn.Module):
 
     self.policy_optim = t.optim.Adam(self.policy.parameters(), lr=lr)
     self.critic_optim = t.optim.Adam(self.critic.parameters(), lr=lr)
+
+  def save(self, name: str) -> None:
+    CHECKPOINTS.mkdir(exist_ok=True)
+    t.save(
+      {
+        "n_actions": self._n_actions,
+        "d_state": self._d_state,
+        "weights": self.state_dict(),
+      },
+      CHECKPOINTS / f"{name}.pt",
+    )
+
+  @classmethod
+  def load(cls, name: str, device=DEVICE) -> "PPO":
+    checkpoint = t.load(CHECKPOINTS / f"{name}.pt", map_location=device)
+    ppo = cls(
+      n_actions=checkpoint["n_actions"], d_state=checkpoint["d_state"], device=device
+    )
+    ppo.load_state_dict(checkpoint["weights"])
+    return ppo.to(device)
 
   def forward(
     self,
