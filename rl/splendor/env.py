@@ -6,11 +6,11 @@ import numpy as np
 from engine import (
   WIN_POINTS,
   Action,
-  PlayerState,
   RandomDealer,
   RandomStrategy,
   Strategy,
   Table,
+  score,
   take_turn,
 )
 
@@ -21,11 +21,6 @@ LEARNER = 0
 NUM_PLAYERS = 2
 
 type Obs = dict[str, np.ndarray]
-
-
-def _score(player: PlayerState) -> tuple[int, int]:
-  """Engine's tie-break: more points, then fewer cards."""
-  return player.points, -len(player.cards)
 
 
 class SplendorEnv(gym.Env[Obs, int]):
@@ -92,8 +87,8 @@ class SplendorEnv(gym.Env[Obs, int]):
 
   def _reward(self) -> float:
     players = self.table.players
-    mine = _score(players[LEARNER])
-    best = max(_score(p) for i, p in enumerate(players) if i != LEARNER)
+    mine = score(players[LEARNER])
+    best = max(score(p) for i, p in enumerate(players) if i != LEARNER)
     if mine > best:
       return 1.0
     return -1.0 if mine < best else 0.0

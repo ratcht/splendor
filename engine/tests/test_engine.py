@@ -4,7 +4,7 @@ from conftest import FakeDealer, ScriptedStrategy, card, make_board, make_player
 from engine.models import Gem, GemStack
 from engine.table import Table
 
-from engine.engine import run_game, take_turn
+from engine.engine import run_game, score, take_turn
 
 # ── take_turn ─────────────────────────────────────────────────────────────────
 
@@ -132,8 +132,18 @@ def test_run_game_winner_tiebreak_fewer_cards():
   p_many = make_player(cards=[card(points=3)] * 5)  # 15pt, 5 cards
   players = [p_many, p_few]
 
-  winner_idx, winner = max(
-    enumerate(players), key=lambda x: (x[1].points, -len(x[1].cards))
-  )
+  winner_idx, winner = max(enumerate(players), key=lambda p: score(p[1]))
   assert winner_idx == 1
   assert winner is p_few
+
+
+def test_run_game_draw():
+  # Both players buy a free 15pt card, ending on equal points and equal cards.
+  free_a = card(level=3, gem=Gem.Ruby, points=15)
+  free_b = card(level=3, gem=Gem.Sapphire, points=15)
+  dealer = FakeDealer(initial=make_board(dealt={1: [], 2: [], 3: [free_a, free_b]}))
+
+  s1 = ScriptedStrategy([BuyCard(card=free_a)])
+  s2 = ScriptedStrategy([BuyCard(card=free_b)])
+
+  assert run_game([s1, s2], dealer=dealer) == (None, None)

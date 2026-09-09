@@ -7,6 +7,11 @@ from .table import Table
 WIN_POINTS = 15
 
 
+def score(player: PlayerState) -> tuple[int, int]:
+  """Tie-break: more points, then fewer cards."""
+  return player.points, -len(player.cards)
+
+
 def take_turn(table: Table, action: Action) -> None:
   player = table.players[table.current]
   if not action.is_valid(table.board, player):
@@ -22,7 +27,7 @@ def run_game(
   dealer: Dealer | None = None,
   max_turns: int = 100,
   verbose: bool = False,
-) -> tuple[int, PlayerState]:
+) -> tuple[int | None, PlayerState | None]:
   table = Table(len(agents), dealer=dealer)
   game_over = False
 
@@ -42,4 +47,7 @@ def run_game(
 
     table.advance()
 
-  return max(enumerate(table.players), key=lambda x: (x[1].points, -len(x[1].cards)))
+  ranked = sorted(enumerate(table.players), key=lambda p: score(p[1]), reverse=True)
+  if len(ranked) > 1 and score(ranked[0][1]) == score(ranked[1][1]):
+    return None, None
+  return ranked[0]

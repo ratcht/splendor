@@ -10,7 +10,7 @@ from .actions import (
   primary_key,
 )
 from .dealer import Dealer, RandomDealer
-from .engine import WIN_POINTS, run_game, take_turn
+from .engine import WIN_POINTS, run_game, score, take_turn
 from .models import LEVELS, Card, Gem, GemStack, Noble
 from .state import BoardState, PlayerState, TableState
 from .strategy import RandomStrategy, Strategy
@@ -41,5 +41,6 @@ __all__ = [
   "legal_actions",
   "primary_key",
   "run_game",
+  "score",
   "take_turn",
 ]

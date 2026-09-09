@@ -9,4 +9,7 @@ if __name__ == "__main__":
   idx, winner = run_game(
     [RandomStrategy(), RandomStrategy()], dealer=dealer, verbose=True
   )
-  print(f"\nWinner: P{idx + 1} with {winner.points}pt")
+  if idx is None:
+    print("\nDraw")
+  else:
+    print(f"\nWinner: P{idx + 1} with {winner.points}pt")
