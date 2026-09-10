@@ -22,7 +22,12 @@ class Back(Exception):
 # ── input primitives ──────────────────────────────────────────────────────────
 
 
-def pick(prompt: str, options: list[T], display=callable, allow_back: bool = True) -> T:
+def pick(
+  prompt: str,
+  options: list[T],
+  display: Callable[[T], str] = str,
+  allow_back: bool = True,
+) -> T:
   hint = f" ({BACK_KEY} to go back)" if allow_back else ""
   for i, o in enumerate(options):
     print(f"  {i + 1}. {display(o)}")

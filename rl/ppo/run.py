@@ -12,7 +12,7 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   # the bot takes seat 0, the seat it trained on
-  bot = PolicyStrategy(PPO.load(args.model, device="cpu"))
+  bot = PolicyStrategy(PPO.load(args.model, device="cpu"), verbose=True)
   idx, winner = run_game(
     [bot, HumanStrategy()], dealer=RandomDealer(), max_turns=200, verbose=True
   )

@@ -7,6 +7,7 @@ from itertools import combinations
 import torch as t
 from elote import EloCompetitor
 from engine import Action, RandomDealer, RandomStrategy, Strategy, TableState, run_game
+from engine.strategy.human import fmt_action_primary
 
 from rl.splendor import PASS, action_mask, decode, encode
 
@@ -16,8 +17,9 @@ from .ppo import PPO, split_obs
 class PolicyStrategy:
   """A frozen policy playing the seat to move"""
 
-  def __init__(self, ppo: PPO):
+  def __init__(self, ppo: PPO, verbose: bool = False):
     self.ppo = ppo
+    self.verbose = verbose
     self.device = str(next(ppo.parameters()).device)
 
   def choose_action(self, state: TableState) -> Action | None:
@@ -30,10 +32,13 @@ class PolicyStrategy:
       self.device,
     )
     with t.no_grad():
-      action, _, _ = self.ppo.select_action(obs, mask)
+      sampled, _, _ = self.ppo.select_action(obs, mask)
 
-    index = int(action)
-    return None if index == PASS else decode(index, state.board, player)
+    index = int(sampled)
+    action = None if index == PASS else decode(index, state.board, player)
+    if self.verbose:
+      print(f"P{state.current + 1}: {fmt_action_primary(action) if action else 'pass'}")
+    return action
 
 
 class SnapshotPool:
