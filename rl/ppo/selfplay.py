@@ -1,7 +1,6 @@
 import random
 from collections import deque
 from collections.abc import Mapping
-from copy import deepcopy
 from itertools import combinations
 
 import torch as t
@@ -48,7 +47,9 @@ class SnapshotPool:
     self.snapshots: deque[PPO] = deque(maxlen=capacity)
 
   def add(self, ppo: PPO) -> None:
-    self.snapshots.append(deepcopy(ppo).to("cpu").eval().requires_grad_(False))
+    snapshot = PPO(n_actions=ppo._n_actions, d_state=ppo._d_state, device="cpu")
+    snapshot.load_state_dict({k: v.cpu() for k, v in ppo.state_dict().items()})
+    self.snapshots.append(snapshot.eval().requires_grad_(False))
 
   def __call__(self, rng: random.Random) -> Strategy:
     roll = rng.random()
