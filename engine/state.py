@@ -1,5 +1,6 @@
 from collections import Counter
 from dataclasses import dataclass, field
+from functools import cached_property
 
 from tabulate import tabulate
 
@@ -47,7 +48,7 @@ class PlayerState:
   nobles: list[Noble] = field(default_factory=list)
   gems: GemStack = field(default_factory=GemStack)
 
-  @property
+  @cached_property
   def discounts(self) -> GemStack:
     return GemStack.from_counts(Counter(card.gem for card in self.cards))
 
