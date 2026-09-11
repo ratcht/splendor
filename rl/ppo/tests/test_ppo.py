@@ -22,6 +22,30 @@ def batch(n=16, legal=(0, 5, 17, 42)):
   return obs, mask
 
 
+# ── critic initialization ─────────────────────────────────────────────────────
+
+
+def test_critic_initially_predicts_zero():
+  ppo = model()
+  obs, mask = batch()
+  _, values = ppo.forward(obs, mask)
+  assert t.equal(values, t.zeros_like(values))
+
+
+def test_zero_initialized_critic_can_learn():
+  ppo = model()
+  obs, mask = batch()
+  log_probs, values, _ = ppo.evaluate(obs, t.zeros(len(obs), dtype=t.long), mask)
+  targets = t.ones_like(values)
+  loss = F.mse_loss(values, targets)
+
+  ppo.update_params(log_probs.mean() * 0, loss)
+
+  with t.no_grad():
+    new_values = ppo.critic(obs)
+    assert F.mse_loss(new_values, targets) < loss
+
+
 # ── masking ───────────────────────────────────────────────────────────────────
 
 

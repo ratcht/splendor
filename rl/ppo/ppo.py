@@ -36,6 +36,10 @@ class PPO(nn.Module):
       nn.Linear(hidden, 1),
     )
 
+    # Zero-init to avoid arbitrary bootstrap advantages before any outcomes are observed
+    nn.init.zeros_(self.critic[-1].weight)
+    nn.init.zeros_(self.critic[-1].bias)
+
     self.policy_optim = t.optim.Adam(self.policy.parameters(), lr=lr)
     self.critic_optim = t.optim.Adam(self.critic.parameters(), lr=lr)
 
