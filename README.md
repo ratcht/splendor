@@ -85,7 +85,7 @@ python -m pytest engine/tests rl/splendor/tests rl/ppo/tests
 
 ## RL
 
-`rl/splendor` wraps the engine as `Splendor-v0`, a two-player Gymnasium environment. The learner takes seat 0, and each step includes the opponent's reply. Illegal actions are masked out. Rewards are sparse: `+1` for a win, `-1` for a loss, and `0` otherwise. Games are capped at 200 learner turns.
+`rl/splendor` wraps the engine as `Splendor-v0`, a two-player Gymnasium environment. The learner takes seat 0, and each step includes the opponent's reply. Illegal actions are masked out. Rewards are sparse: `+1` for a win, `-1` for a loss, and `0` otherwise. This avoids reward hacking, which can arise from rewarding intermediate actions like buying a card or taking a gem. The median game takes ~30 steps and is capped at 200 learner turns, so a 256-step rollout typically contains several completed games, giving GAE terminal reward signal to work with despite the sparsity.
 
 Training lives in `rl/ppo/train.ipynb`. Run it with the notebook working directory set to `rl/ppo`. It collects 256-step rollouts from 24 parallel environments, then updates the policy with clipped PPO and GAE. The critic starts with zero value predictions. Opponents start out random, then come from a mix of frozen policy snapshots and random play. The notebook saves checkpoints and includes win-rate and Elo evaluation.
 
